@@ -52,6 +52,14 @@ export const listApproved = query({
     const identity = await ctx.auth.getUserIdentity();
     const searchText = normalize(args.search ?? "");
 
+    if (args.paginationOpts.numItems > 20) {
+      throw new ConvexError("Too many items requested at once.");
+    }
+
+    if (searchText.length > 100) {
+      throw new ConvexError("Search text is too long.");
+    }
+
     let q;
     if (args.department && args.department !== "All") {
       q = ctx.db
@@ -100,9 +108,32 @@ export const create = mutation({
   },
   handler: async (ctx, args) => {
     const user = await requireUser(ctx);
+    const now = Date.now();
 
     if (!args.imageUrl.startsWith("http")) {
       throw new ConvexError("Invalid image URL.");
+    }
+
+    const recent15MinUploads = await ctx.db
+      .query("papers")
+      .withIndex("by_uploadedBy_createdAt", (q) =>
+        q.eq("uploadedBy", user._id).gte("createdAt", now - 15 * 60 * 1000),
+      )
+      .collect();
+
+    if (recent15MinUploads.length >= 5) {
+      throw new ConvexError("Rate limit exceeded: max 5 uploads per 15 minutes.");
+    }
+
+    const recent24hUploads = await ctx.db
+      .query("papers")
+      .withIndex("by_uploadedBy_createdAt", (q) =>
+        q.eq("uploadedBy", user._id).gte("createdAt", now - 24 * 60 * 60 * 1000),
+      )
+      .collect();
+
+    if (recent24hUploads.length >= 30) {
+      throw new ConvexError("Rate limit exceeded: max 30 uploads per day.");
     }
 
     const sanitize = (value, max = 100) => value.trim().slice(0, max);
@@ -117,7 +148,7 @@ export const create = mutation({
       imageUrl: sanitize(args.imageUrl, 600),
       uploadedBy: user._id,
       status: "pending",
-      createdAt: Date.now(),
+      createdAt: now,
     });
   },
 });

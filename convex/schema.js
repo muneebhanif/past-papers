@@ -51,4 +51,9 @@ export default defineSchema({
   })
     .index("by_paperId", ["paperId", "createdAt"])
     .index("by_paperId_userId", ["paperId", "userId"]),
+
+  uploadAuthLogs: defineTable({
+    userId: v.id("users"),
+    createdAt: v.number(),
+  }).index("by_userId_createdAt", ["userId", "createdAt"]),
 });
