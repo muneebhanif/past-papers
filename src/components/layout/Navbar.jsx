@@ -2,6 +2,7 @@ import { useQuery } from "convex/react";
 import { Link, useLocation } from "react-router-dom";
 import { api } from "../../lib/api";
 import { AuthButton } from "../auth/AuthButton";
+import mustLogo from "../../assets/must-logo.png";
 
 export function Navbar({ search, setSearch }) {
   const me = useQuery(api.users.current);
@@ -11,8 +12,13 @@ export function Navbar({ search, setSearch }) {
     <nav className="sticky top-0 z-50 border-b border-slate-200/60 bg-white/90 backdrop-blur-xl">
       <div className="mx-auto flex max-w-[1300px] items-center justify-between gap-3 px-3 py-2 md:px-4">
         <div className="flex items-center gap-4">
-          <Link to="/" className="text-xl font-black tracking-tight text-blue-700 md:text-2xl">
-            PastPapers Hub
+          <Link to="/" className="flex items-center gap-2 text-xl font-black tracking-tight text-blue-700 md:text-2xl">
+            <img
+              src={mustLogo}
+              alt="must past papers logo"
+              className="h-8 w-8 rounded-lg object-cover md:h-9 md:w-9"
+            />
+            <span>must past papers</span>
           </Link>
 
           <div className="hidden lg:flex items-center rounded-xl bg-slate-100 px-3 py-2">

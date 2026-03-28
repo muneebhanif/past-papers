@@ -1,4 +1,4 @@
-# Past Papers Hub
+# must past papers
 
 Full-stack app built with React + Vite + Tailwind + Convex + ImageKit + Google OAuth.
 
