@@ -1,7 +1,10 @@
 import { useAction, useConvexAuth, useMutation } from "convex/react";
 import { useEffect, useState } from "react";
 import { DEPARTMENTS } from "../constants/departments";
+import { ACADEMIC_YEARS, PAPER_TYPES } from "../constants/academicOptions";
 import { api } from "../lib/api";
+
+const sanitizeText = (value, max = 120) => value.trim().replace(/\s+/g, " ").slice(0, max);
 
 export function UploadPage({ onRequireAuth }) {
   const { isAuthenticated } = useConvexAuth();
@@ -12,7 +15,7 @@ export function UploadPage({ onRequireAuth }) {
     title: "",
     subject: "",
     teacher: "",
-    year: "",
+    year: ACADEMIC_YEARS[0],
     type: "Midterm",
     department: "Computer Science",
   });
@@ -42,6 +45,22 @@ export function UploadPage({ onRequireAuth }) {
       onRequireAuth();
       return;
     }
+
+    const clean = {
+      title: sanitizeText(form.title, 120),
+      subject: sanitizeText(form.subject, 80),
+      teacher: sanitizeText(form.teacher, 80),
+      year: sanitizeText(form.year, 20),
+      type: sanitizeText(form.type, 40),
+      department: sanitizeText(form.department, 80),
+    };
+
+    if (clean.title.length < 4) return setError("Title must be at least 4 characters.");
+    if (clean.subject.length < 2) return setError("Subject must be at least 2 characters.");
+    if (clean.teacher.length < 2) return setError("Teacher must be at least 2 characters.");
+    if (!PAPER_TYPES.includes(clean.type)) return setError("Invalid paper type selected.");
+    if (!ACADEMIC_YEARS.includes(clean.year)) return setError("Invalid year selected.");
+
     if (!file) return setError("Please select a JPEG image.");
     if (file.type !== "image/jpeg") return setError("Only image/jpeg is allowed.");
     if (file.size > 5 * 1024 * 1024) return setError("File size must be 5MB or less.");
@@ -76,13 +95,13 @@ export function UploadPage({ onRequireAuth }) {
       }
       const uploadResult = await uploadResponse.json();
 
-      await createPaper({ ...form, imageUrl: uploadResult.url });
+      await createPaper({ ...clean, imageUrl: uploadResult.url });
       setSuccess("Upload submitted for admin approval.");
       setForm({
         title: "",
         subject: "",
         teacher: "",
-        year: "",
+        year: ACADEMIC_YEARS[0],
         type: "Midterm",
         department: "Computer Science",
       });
@@ -111,13 +130,16 @@ export function UploadPage({ onRequireAuth }) {
                 <option key={department}>{department}</option>
               ))}
             </select>
-            <input
+            <select
               value={form.type}
               onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
-              placeholder="Paper Type"
               className="rounded-xl border-none bg-slate-100 px-3 py-3 text-sm"
               required
-            />
+            >
+              {PAPER_TYPES.map((paperType) => (
+                <option key={paperType} value={paperType}>{paperType}</option>
+              ))}
+            </select>
           </div>
 
           <input
@@ -145,13 +167,16 @@ export function UploadPage({ onRequireAuth }) {
             />
           </div>
 
-          <input
+          <select
             value={form.year}
             onChange={(e) => setForm((p) => ({ ...p, year: e.target.value }))}
-            placeholder="Year"
             className="w-full rounded-xl border-none bg-slate-100 px-3 py-3 text-sm"
             required
-          />
+          >
+            {ACADEMIC_YEARS.map((yearOption) => (
+              <option key={yearOption} value={yearOption}>{yearOption}</option>
+            ))}
+          </select>
 
           <input
             type="file"

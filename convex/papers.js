@@ -1,9 +1,46 @@
 import { paginationOptsValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { mutation, query } from "./_generated/server";
 import { requireAdmin, requireUser } from "./lib";
 
 const normalize = (value) => value.trim().toLowerCase();
+const sanitizeText = (value, max = 100) => value.trim().replace(/\s+/g, " ").slice(0, max);
+const PAPER_TYPES = new Set(["Midterm", "Terminal", "Improve", "Summer"]);
+const YEAR_PATTERN = /^(Fall|Spring|Summer)\s20\d{2}$/;
+
+const isValidAcademicYear = (value) => {
+  if (!YEAR_PATTERN.test(value)) return false;
+  const year = Number(value.split(" ")[1]);
+  return year >= 2021 && year <= new Date().getFullYear() + 2;
+};
+
+const validatePaperArgs = (args) => {
+  const title = sanitizeText(args.title, 120);
+  const subject = sanitizeText(args.subject, 80);
+  const teacher = sanitizeText(args.teacher, 80);
+  const year = sanitizeText(args.year, 20);
+  const type = sanitizeText(args.type, 40);
+  const department = sanitizeText(args.department, 80);
+
+  if (title.length < 4) {
+    throw new ConvexError("Title must be at least 4 characters.");
+  }
+  if (subject.length < 2) {
+    throw new ConvexError("Subject must be at least 2 characters.");
+  }
+  if (teacher.length < 2) {
+    throw new ConvexError("Teacher must be at least 2 characters.");
+  }
+  if (!PAPER_TYPES.has(type)) {
+    throw new ConvexError("Invalid paper type.");
+  }
+  if (!isValidAcademicYear(year)) {
+    throw new ConvexError("Invalid academic year.");
+  }
+
+  return { title, subject, teacher, year, type, department };
+};
 
 const enrichPaper = async (ctx, paper, viewerId) => {
   const uploader = await ctx.db.get(paper.uploadedBy);
@@ -29,6 +66,7 @@ const enrichPaper = async (ctx, paper, viewerId) => {
 
   return {
     ...paper,
+    isMine: Boolean(viewerId && paper.uploadedBy === viewerId),
     uploader: {
       _id: uploader?._id,
       name: uploader?.username ?? uploader?.name ?? "student",
@@ -49,7 +87,7 @@ export const listApproved = query({
     search: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
+    const viewerUserId = await getAuthUserId(ctx);
     const searchText = normalize(args.search ?? "");
 
     if (args.paginationOpts.numItems > 20) {
@@ -85,13 +123,46 @@ export const listApproved = query({
       return haystack.includes(searchText);
     });
 
-    const enriched = await Promise.all(
-      filtered.map((paper) => enrichPaper(ctx, paper, identity?.subject ?? null)),
+    const enrichedApproved = await Promise.all(
+      filtered.map((paper) => enrichPaper(ctx, paper, viewerUserId ?? null)),
     );
+
+    const isFirstPage = !args.paginationOpts.cursor;
+    let ownPendingOrRejected = [];
+
+    if (viewerUserId && isFirstPage) {
+      const ownPapers = await ctx.db
+        .query("papers")
+        .withIndex("by_uploadedBy_createdAt", (q) => q.eq("uploadedBy", viewerUserId))
+        .order("desc")
+        .take(100);
+
+      ownPendingOrRejected = ownPapers.filter((paper) => {
+        if (paper.status === "approved") return false;
+        if (args.department && args.department !== "All" && paper.department !== args.department) {
+          return false;
+        }
+        if (!searchText) return true;
+        const haystack = [paper.title, paper.subject, paper.teacher, paper.year, paper.type]
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(searchText);
+      });
+    }
+
+    const enrichedOwn = await Promise.all(
+      ownPendingOrRejected.map((paper) => enrichPaper(ctx, paper, viewerUserId ?? null)),
+    );
+
+    const byId = new Map();
+    for (const paper of [...enrichedOwn, ...enrichedApproved]) {
+      byId.set(paper._id, paper);
+    }
+    const merged = [...byId.values()].sort((a, b) => b.createdAt - a.createdAt);
 
     return {
       ...page,
-      page: enriched,
+      page: merged,
     };
   },
 });
@@ -136,16 +207,11 @@ export const create = mutation({
       throw new ConvexError("Rate limit exceeded: max 30 uploads per day.");
     }
 
-    const sanitize = (value, max = 100) => value.trim().slice(0, max);
+    const validated = validatePaperArgs(args);
 
     return ctx.db.insert("papers", {
-      title: sanitize(args.title),
-      subject: sanitize(args.subject),
-      teacher: sanitize(args.teacher),
-      year: sanitize(args.year, 20),
-      type: sanitize(args.type, 40),
-      department: sanitize(args.department, 80),
-      imageUrl: sanitize(args.imageUrl, 600),
+      ...validated,
+      imageUrl: sanitizeText(args.imageUrl, 600),
       uploadedBy: user._id,
       status: "pending",
       reviewNote: undefined,
@@ -193,15 +259,10 @@ export const updateMyPaper = mutation({
       throw new ConvexError("You can only update your own uploads.");
     }
 
-    const sanitize = (value, max = 100) => value.trim().slice(0, max);
+    const validated = validatePaperArgs(args);
 
     await ctx.db.patch(args.paperId, {
-      title: sanitize(args.title),
-      subject: sanitize(args.subject),
-      teacher: sanitize(args.teacher),
-      year: sanitize(args.year, 20),
-      type: sanitize(args.type, 40),
-      department: sanitize(args.department, 80),
+      ...validated,
       status: "pending",
       reviewNote: undefined,
       reviewedAt: undefined,

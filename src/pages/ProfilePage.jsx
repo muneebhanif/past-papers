@@ -2,6 +2,7 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { DEPARTMENTS } from "../constants/departments";
+import { ACADEMIC_YEARS, PAPER_TYPES } from "../constants/academicOptions";
 
 export function ProfilePage() {
   const { isAuthenticated } = useConvexAuth();
@@ -20,7 +21,7 @@ export function ProfilePage() {
     title: "",
     subject: "",
     teacher: "",
-    year: "",
+    year: ACADEMIC_YEARS[0],
     type: "Midterm",
     department: "Computer Science",
   });
@@ -190,20 +191,26 @@ export function ProfilePage() {
               />
             </div>
             <div className="grid gap-2 md:grid-cols-3">
-              <input
-                value={paperForm.year}
-                onChange={(e) => setPaperForm((p) => ({ ...p, year: e.target.value }))}
-                placeholder="Year"
-                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                required
-              />
-              <input
+              <select
                 value={paperForm.type}
                 onChange={(e) => setPaperForm((p) => ({ ...p, type: e.target.value }))}
-                placeholder="Type"
                 className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
                 required
-              />
+              >
+                {PAPER_TYPES.map((paperType) => (
+                  <option key={paperType} value={paperType}>{paperType}</option>
+                ))}
+              </select>
+              <select
+                value={paperForm.year}
+                onChange={(e) => setPaperForm((p) => ({ ...p, year: e.target.value }))}
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                required
+              >
+                {ACADEMIC_YEARS.map((yearOption) => (
+                  <option key={yearOption} value={yearOption}>{yearOption}</option>
+                ))}
+              </select>
               <select
                 value={paperForm.department}
                 onChange={(e) => setPaperForm((p) => ({ ...p, department: e.target.value }))}

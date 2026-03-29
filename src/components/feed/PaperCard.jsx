@@ -82,6 +82,22 @@ export function PaperCard({ paper, onRequireAuth }) {
         <h3 className="text-lg font-bold text-slate-900 transition group-hover:text-blue-700 md:text-xl">{paper.title}</h3>
         <p className="mt-2 text-sm text-slate-600">{paper.subject} · {paper.teacher} · {paper.type} · {paper.year}</p>
 
+        {paper.isMine ? (
+          <div className="mt-2">
+            <span
+              className={`rounded-full px-2 py-1 text-xs font-bold uppercase tracking-wide ${
+                paper.status === "approved"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : paper.status === "rejected"
+                    ? "bg-red-100 text-red-700"
+                    : "bg-amber-100 text-amber-700"
+              }`}
+            >
+              My post · {paper.status}
+            </span>
+          </div>
+        ) : null}
+
         <div className="mt-4 flex flex-wrap gap-2">
           <span className="rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700">#{paper.subject.replace(/\s+/g, "_")}</span>
           <span className="rounded-md bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-700">#{paper.year}</span>
