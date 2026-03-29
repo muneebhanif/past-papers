@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 import { ImageViewerModal } from "../components/common/ImageViewerModal";
 
 export function AdminPage() {
+  // --- Existing Auth & User Mutations ---
   const login = useMutation(api.adminPanel.login);
   const logout = useMutation(api.adminPanel.logout);
   const setStatus = useMutation(api.adminPanel.setStatus);
@@ -12,6 +13,12 @@ export function AdminPage() {
   const updateUser = useMutation(api.adminPanel.updateUser);
   const deleteUser = useMutation(api.adminPanel.deleteUser);
 
+  // --- New CRUD Mutations & Queries ---
+  const updatePaper = useMutation(api.adminPanel.updatePaper);
+  const deletePaper = useMutation(api.adminPanel.deletePaper);
+  const deleteActivity = useMutation(api.adminPanel.deleteActivity);
+
+  // --- State ---
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -20,15 +27,25 @@ export function AdminPage() {
   const [tab, setTab] = useState("moderation");
   const [activePaper, setActivePaper] = useState(null);
   const [reviewNoteByPaper, setReviewNoteByPaper] = useState({});
+  
+  // User Form State
   const [userForm, setUserForm] = useState({ username: "", name: "", email: "", image: "" });
   const [editingUserId, setEditingUserId] = useState("");
   const [userMessage, setUserMessage] = useState("");
 
+  // Paper Form State
+  const [paperForm, setPaperForm] = useState({ title: "", department: "", subject: "" });
+  const [editingPaperId, setEditingPaperId] = useState("");
+  const [paperMessage, setPaperMessage] = useState("");
+
+  // --- Queries ---
   const me = useQuery(api.adminPanel.me, token ? { token } : "skip");
   const isAuthorized = Boolean(token && me?.ok);
   const pending = useQuery(api.adminPanel.listPending, isAuthorized ? { token } : "skip") ?? [];
   const users = useQuery(listUsersQuery, isAuthorized ? { token } : "skip") ?? [];
   const activity = useQuery(api.adminPanel.listActivity, isAuthorized ? { token, limit: 100 } : "skip") ?? [];
+  // Fetch all papers for the full CRUD view
+  const allPapers = useQuery(api.adminPanel.listAllPapers, isAuthorized ? { token } : "skip") ?? [];
 
   useEffect(() => {
     if (me?.ok === false) {
@@ -37,6 +54,7 @@ export function AdminPage() {
     }
   }, [me]);
 
+  // --- Handlers ---
   const onSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -77,6 +95,7 @@ export function AdminPage() {
     }
   };
 
+  // User CRUD Handlers
   const onSaveUser = async (e) => {
     e.preventDefault();
     setUserMessage("");
@@ -108,14 +127,68 @@ export function AdminPage() {
   const onDeleteUser = async (userId) => {
     setUserMessage("");
     try {
-      await deleteUser({ token, userId });
-      if (editingUserId === userId) {
-        setEditingUserId("");
-        setUserForm({ username: "", name: "", email: "", image: "" });
+      if (window.confirm("Are you sure you want to delete this user?")) {
+        await deleteUser({ token, userId });
+        if (editingUserId === userId) {
+          setEditingUserId("");
+          setUserForm({ username: "", name: "", email: "", image: "" });
+        }
+        setUserMessage("User deleted.");
       }
-      setUserMessage("User deleted.");
     } catch (err) {
       setUserMessage(err?.message || "Failed to delete user.");
+    }
+  };
+
+  // Paper CRUD Handlers
+  const onSavePaper = async (e) => {
+    e.preventDefault();
+    setPaperMessage("");
+    try {
+      if (editingPaperId) {
+        await updatePaper({ token, paperId: editingPaperId, ...paperForm });
+        setPaperMessage("Paper updated.");
+        setEditingPaperId("");
+        setPaperForm({ title: "", department: "", subject: "" });
+      }
+    } catch (err) {
+      setPaperMessage(err?.message || "Failed to update paper.");
+    }
+  };
+
+  const onEditPaper = (paper) => {
+    setEditingPaperId(paper._id);
+    setPaperForm({
+      title: paper.title ?? "",
+      department: paper.department ?? "",
+      subject: paper.subject ?? "",
+    });
+  };
+
+  const onDeletePaper = async (paperId) => {
+    setPaperMessage("");
+    try {
+      if (window.confirm("Are you sure you want to delete this paper?")) {
+        await deletePaper({ token, paperId });
+        if (editingPaperId === paperId) {
+          setEditingPaperId("");
+          setPaperForm({ title: "", department: "", subject: "" });
+        }
+        setPaperMessage("Paper deleted.");
+      }
+    } catch (err) {
+      setPaperMessage(err?.message || "Failed to delete paper.");
+    }
+  };
+
+  // Activity CRUD Handlers
+  const onDeleteActivity = async (activityId) => {
+    try {
+      if (window.confirm("Delete this activity/comment?")) {
+        await deleteActivity({ token, activityId });
+      }
+    } catch (err) {
+      console.error("Failed to delete activity", err);
     }
   };
 
@@ -164,7 +237,7 @@ export function AdminPage() {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
         <div>
           <h2 className="text-2xl font-extrabold tracking-tight text-slate-900">Admin Dashboard</h2>
-          <p className="text-sm text-slate-500">Private moderation and user management panel.</p>
+          <p className="text-sm text-slate-500">Private moderation and platform management panel.</p>
         </div>
         <button
           onClick={onLogout}
@@ -174,10 +247,14 @@ export function AdminPage() {
         </button>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-4">
         <div className="rounded-xl bg-slate-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Pending</p>
           <p className="mt-2 text-2xl font-black text-slate-900">{pending.length}</p>
+        </div>
+        <div className="rounded-xl bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Total Papers</p>
+          <p className="mt-2 text-2xl font-black text-slate-900">{allPapers.length}</p>
         </div>
         <div className="rounded-xl bg-slate-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">Users</p>
@@ -189,7 +266,7 @@ export function AdminPage() {
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <button
           onClick={() => setTab("moderation")}
           className={`rounded-full px-4 py-2 text-sm font-semibold ${
@@ -197,6 +274,14 @@ export function AdminPage() {
           }`}
         >
           Moderation
+        </button>
+        <button
+          onClick={() => setTab("all_papers")}
+          className={`rounded-full px-4 py-2 text-sm font-semibold ${
+            tab === "all_papers" ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-700"
+          }`}
+        >
+          All Papers
         </button>
         <button
           onClick={() => setTab("users")}
@@ -218,7 +303,8 @@ export function AdminPage() {
 
       {error ? <p className="text-sm font-semibold text-red-600">{error}</p> : null}
 
-      {tab === "moderation" ? (
+      {/* MODERATION TAB */}
+      {tab === "moderation" && (
         <div className="space-y-3">
           {pending.map((paper) => (
             <div key={paper._id} className="rounded-xl border border-slate-200 p-4">
@@ -226,7 +312,7 @@ export function AdminPage() {
                 <div>
                   <p className="text-base font-bold text-slate-900">{paper.title}</p>
                   <p className="text-sm text-slate-500">
-                    {paper.department} · {paper.subject} · @{paper.uploader.name}
+                    {paper.department} · {paper.subject} · @{paper.uploader?.name || 'unknown'}
                   </p>
                 </div>
                 <button
@@ -273,9 +359,106 @@ export function AdminPage() {
             </div>
           ) : null}
         </div>
-      ) : tab === "users" ? (
+      )}
+
+      {/* ALL PAPERS CRUD TAB */}
+      {tab === "all_papers" && (
         <div className="grid gap-4 lg:grid-cols-5">
-          <section className="rounded-xl border border-slate-200 p-4 lg:col-span-2">
+          <section className="rounded-xl border border-slate-200 p-4 lg:col-span-2 h-fit">
+            <h3 className="text-lg font-bold text-slate-900">{editingPaperId ? "Update Paper" : "Select a paper to edit"}</h3>
+            <form onSubmit={onSavePaper} className="mt-3 space-y-2">
+              <input
+                value={paperForm.title}
+                onChange={(e) => setPaperForm((p) => ({ ...p, title: e.target.value }))}
+                placeholder="Paper Title"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                required
+                disabled={!editingPaperId}
+              />
+              <input
+                value={paperForm.department}
+                onChange={(e) => setPaperForm((p) => ({ ...p, department: e.target.value }))}
+                placeholder="Department"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                disabled={!editingPaperId}
+              />
+              <input
+                value={paperForm.subject}
+                onChange={(e) => setPaperForm((p) => ({ ...p, subject: e.target.value }))}
+                placeholder="Subject"
+                className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                disabled={!editingPaperId}
+              />
+
+              {paperMessage ? <p className="text-sm font-semibold text-slate-600">{paperMessage}</p> : null}
+
+              <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={!editingPaperId}
+                  className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50"
+                >
+                  Update Paper
+                </button>
+                {editingPaperId ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingPaperId("");
+                      setPaperForm({ title: "", department: "", subject: "" });
+                    }}
+                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700"
+                  >
+                    Cancel
+                  </button>
+                ) : null}
+              </div>
+            </form>
+          </section>
+
+          <section className="rounded-xl border border-slate-200 p-4 lg:col-span-3">
+            <h3 className="mb-3 text-lg font-bold text-slate-900">All Database Papers</h3>
+            <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2">
+              {allPapers.map((paper) => (
+                <div key={paper._id} className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 p-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold text-slate-900">{paper.title}</p>
+                    <p className="truncate text-xs text-slate-500">
+                      Status: <span className={`font-semibold ${paper.status === 'approved' ? 'text-emerald-600' : paper.status === 'rejected' ? 'text-red-600' : 'text-amber-600'}`}>{paper.status}</span> · {paper.department}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 gap-2">
+                    <button
+                      onClick={() => setActivePaper(paper)}
+                      className="rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700"
+                    >
+                      View
+                    </button>
+                    <button
+                      onClick={() => onEditPaper(paper)}
+                      className="rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-semibold text-blue-700"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => void onDeletePaper(paper._id)}
+                      className="rounded-lg bg-red-100 px-3 py-1.5 text-xs font-semibold text-red-700"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {!allPapers.length && <p className="text-sm text-slate-500">No papers found.</p>}
+            </div>
+          </section>
+        </div>
+      )}
+
+      {/* USERS CRUD TAB */}
+      {tab === "users" && (
+        <div className="grid gap-4 lg:grid-cols-5">
+          <section className="rounded-xl border border-slate-200 p-4 lg:col-span-2 h-fit">
             <h3 className="text-lg font-bold text-slate-900">{editingUserId ? "Update User" : "Add User"}</h3>
             <form onSubmit={onSaveUser} className="mt-3 space-y-2">
               <input
@@ -332,12 +515,12 @@ export function AdminPage() {
 
           <section className="rounded-xl border border-slate-200 p-4 lg:col-span-3">
             <h3 className="mb-3 text-lg font-bold text-slate-900">All Users</h3>
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[600px] overflow-y-auto pr-2">
               {users.map((user) => (
                 <div key={user._id} className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 p-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-bold text-slate-900">@{user.username ?? "no_username"}</p>
-                    <p className="truncate text-xs text-slate-500">{user.email ?? "no-email"} · uploads {user.uploadCount}</p>
+                    <p className="truncate text-xs text-slate-500">{user.email ?? "no-email"} · uploads {user.uploadCount || 0}</p>
                   </div>
                   <div className="flex shrink-0 gap-2">
                     <button
@@ -358,24 +541,35 @@ export function AdminPage() {
             </div>
           </section>
         </div>
-      ) : (
+      )}
+
+      {/* ACTIVITY TAB */}
+      {tab === "activity" && (
         <section className="rounded-xl border border-slate-200 p-4">
           <h3 className="mb-3 text-lg font-bold text-slate-900">Recent Platform Activity</h3>
           <div className="space-y-2">
             {activity.length ? activity.map((item) => (
-              <div key={item.id} className="rounded-lg bg-slate-50 p-3">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-slate-800">
-                    {item.type === "comment" ? "💬" : "❤️"} @{item.actorName}
+              <div key={item._id || item.id} className="flex justify-between items-start gap-3 rounded-lg bg-slate-50 p-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-3">
+                    <p className="text-sm font-semibold text-slate-800">
+                      {item.type === "comment" ? "💬" : "❤️"} @{item.actorName}
+                    </p>
+                    <p className="text-[11px] text-slate-500">{new Date(item.createdAt).toLocaleString()}</p>
+                  </div>
+                  <p className="mt-1 text-sm text-slate-700">
+                    {item.type === "comment" ? "Commented on" : "Liked"} <span className="font-semibold">{item.paperTitle}</span>
                   </p>
-                  <p className="text-[11px] text-slate-500">{new Date(item.createdAt).toLocaleString()}</p>
+                  {item.type === "comment" && item.content ? (
+                    <p className="mt-1 text-xs text-slate-500">“{item.content}”</p>
+                  ) : null}
                 </div>
-                <p className="mt-1 text-sm text-slate-700">
-                  {item.type === "comment" ? "Commented on" : "Liked"} <span className="font-semibold">{item.paperTitle}</span>
-                </p>
-                {item.type === "comment" && item.content ? (
-                  <p className="mt-1 text-xs text-slate-500">“{item.content}”</p>
-                ) : null}
+                <button
+                    onClick={() => void onDeleteActivity(item._id || item.id)}
+                    className="shrink-0 rounded-lg bg-red-100 px-2.5 py-1 text-xs font-semibold text-red-700 hover:bg-red-200"
+                  >
+                    Delete
+                  </button>
               </div>
             )) : (
               <p className="rounded-lg bg-slate-50 p-4 text-sm text-slate-500">No activity yet.</p>

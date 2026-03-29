@@ -58,6 +58,8 @@ const enrichPaper = async (ctx, paper) => {
   };
 };
 
+const sanitizeText = (value, max = 120) => value.trim().replace(/\s+/g, " ").slice(0, max);
+
 export const login = mutation({
   args: {
     email: v.string(),
@@ -257,6 +259,143 @@ export const listActivity = query({
     return [...commentEvents, ...likeEvents]
       .sort((a, b) => b.createdAt - a.createdAt)
       .slice(0, limit);
+  },
+});
+
+export const listAllPapers = query({
+  args: { token: v.string() },
+  handler: async (ctx, args) => {
+    await requireValidSession(ctx, args.token);
+
+    const papers = await ctx.db.query("papers").order("desc").take(5000);
+    return Promise.all(papers.map((paper) => enrichPaper(ctx, paper)));
+  },
+});
+
+export const updatePaper = mutation({
+  args: {
+    token: v.string(),
+    paperId: v.id("papers"),
+    title: v.string(),
+    department: v.optional(v.string()),
+    subject: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await requireValidSession(ctx, args.token);
+
+    const paper = await ctx.db.get(args.paperId);
+    if (!paper) {
+      throw new ConvexError("Paper not found.");
+    }
+
+    const title = sanitizeText(args.title, 120);
+    if (title.length < 4) {
+      throw new ConvexError("Title must be at least 4 characters.");
+    }
+
+    const department = args.department ? sanitizeText(args.department, 80) : paper.department;
+    const subject = args.subject ? sanitizeText(args.subject, 80) : paper.subject;
+
+    await ctx.db.patch(args.paperId, {
+      title,
+      department,
+      subject,
+    });
+
+    return { ok: true };
+  },
+});
+
+export const deletePaper = mutation({
+  args: {
+    token: v.string(),
+    paperId: v.id("papers"),
+  },
+  handler: async (ctx, args) => {
+    await requireValidSession(ctx, args.token);
+
+    const paper = await ctx.db.get(args.paperId);
+    if (!paper) {
+      throw new ConvexError("Paper not found.");
+    }
+
+    const comments = await ctx.db
+      .query("comments")
+      .withIndex("by_paperId_createdAt", (q) => q.eq("paperId", args.paperId))
+      .collect();
+    for (const comment of comments) {
+      await ctx.db.delete(comment._id);
+    }
+
+    const likes = await ctx.db
+      .query("likes")
+      .withIndex("by_paperId", (q) => q.eq("paperId", args.paperId))
+      .collect();
+    for (const like of likes) {
+      await ctx.db.delete(like._id);
+    }
+
+    const notifications = await ctx.db
+      .query("notifications")
+      .filter((q) => q.eq(q.field("paperId"), args.paperId))
+      .collect();
+    for (const item of notifications) {
+      await ctx.db.delete(item._id);
+    }
+
+    await ctx.db.delete(args.paperId);
+    return { ok: true };
+  },
+});
+
+export const deleteActivity = mutation({
+  args: {
+    token: v.string(),
+    activityId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await requireValidSession(ctx, args.token);
+
+    const [activityType, entityId] = args.activityId.split("_");
+    if (!activityType || !entityId) {
+      throw new ConvexError("Invalid activity id.");
+    }
+
+    if (activityType === "comment") {
+      const comment = await ctx.db.get(entityId);
+      if (!comment) {
+        return { ok: true };
+      }
+
+      const paper = await ctx.db.get(comment.paperId);
+      if (paper) {
+        await ctx.db.patch(paper._id, {
+          commentCount: Math.max((paper.commentCount ?? 0) - 1, 0),
+        });
+      }
+
+      await ctx.db.delete(comment._id);
+      return { ok: true };
+    }
+
+    if (activityType === "like") {
+      const like = await ctx.db.get(entityId);
+      if (!like) {
+        return { ok: true };
+      }
+
+      const paper = await ctx.db.get(like.paperId);
+      if (paper) {
+        await ctx.db.patch(paper._id, {
+          likeCount: Math.max((paper.likeCount ?? 0) - 1, 0),
+        });
+      }
+
+      await ctx.db.delete(like._id);
+      return { ok: true };
+    }
+
+    throw new ConvexError("Unsupported activity type.");
   },
 });
 
