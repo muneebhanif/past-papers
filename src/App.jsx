@@ -1,6 +1,6 @@
 import { useConvexAuth, useMutation } from "convex/react";
 import { useEffect, useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Navbar } from "./components/layout/Navbar";
 import { Sidebar } from "./components/layout/Sidebar";
 import { RightRail } from "./components/layout/RightRail";
@@ -17,10 +17,14 @@ import { ADMIN_PANEL_PATH } from "./lib/adminPath";
 export default function App() {
   const { isAuthenticated } = useConvexAuth();
   const syncCurrentUser = useMutation(api.users.syncCurrentUser);
+  const location = useLocation();
 
   const [department, setDepartment] = useState(DEPARTMENTS[0]);
   const [search, setSearch] = useState("");
   const [isAuthPromptOpen, setAuthPromptOpen] = useState(false);
+
+  const normalizedPath = (location.pathname || "/").replace(/\/+$/, "") || "/";
+  const isAdminRoute = normalizedPath === `/${ADMIN_PANEL_PATH}`;
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -29,12 +33,20 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] text-slate-900">
-      <Navbar search={search} setSearch={setSearch} />
+      {!isAdminRoute ? <Navbar search={search} setSearch={setSearch} /> : null}
 
-      <main className="mx-auto flex w-full max-w-[1300px] gap-4 px-3 py-4 md:px-4 md:py-6">
-        <Sidebar selectedDepartment={department} setDepartment={setDepartment} />
+      <main
+        className={
+          isAdminRoute
+            ? "mx-auto w-full max-w-[1400px] px-3 py-4 md:px-6 md:py-6"
+            : "mx-auto flex w-full max-w-[1300px] gap-4 px-3 py-4 md:px-4 md:py-6"
+        }
+      >
+        {!isAdminRoute ? (
+          <Sidebar selectedDepartment={department} setDepartment={setDepartment} />
+        ) : null}
 
-        <section className="min-w-0 flex-1">
+        <section className={isAdminRoute ? "w-full" : "min-w-0 flex-1"}>
           <Routes>
             <Route
               path="/"
@@ -56,15 +68,17 @@ export default function App() {
           </Routes>
         </section>
 
-        <RightRail />
+        {!isAdminRoute ? <RightRail /> : null}
       </main>
 
-      <MobileBottomNav />
-      <GoogleLoginModal
-        open={isAuthPromptOpen}
-        onClose={() => setAuthPromptOpen(false)}
-        title="Sign in to continue"
-      />
+      {!isAdminRoute ? <MobileBottomNav /> : null}
+      {!isAdminRoute ? (
+        <GoogleLoginModal
+          open={isAuthPromptOpen}
+          onClose={() => setAuthPromptOpen(false)}
+          title="Sign in to continue"
+        />
+      ) : null}
     </div>
   );
 }
