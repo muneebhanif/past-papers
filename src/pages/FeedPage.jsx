@@ -1,5 +1,6 @@
 import { usePaginatedQuery } from "convex/react";
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { api } from "../lib/api";
 import { LoginSplash } from "../components/feed/LoginSplash";
 import { PaperCard } from "../components/feed/PaperCard";
@@ -17,6 +18,8 @@ const departmentSubtitle = (department) => {
 
 export function FeedPage({ department, setDepartment, search, setSearch, onRequireAuth }) {
   const [paperType, setPaperType] = useState("All");
+  const location = useLocation();
+  const highlightedPaperId = new URLSearchParams(location.search).get("paper") || "";
 
   const { results, status, loadMore } = usePaginatedQuery(
     api.papers.listApproved,
@@ -39,6 +42,13 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
     observer.observe(sentinelRef.current);
     return () => observer.disconnect();
   }, [status, loadMore]);
+
+  useEffect(() => {
+    if (!highlightedPaperId || !results.length) return;
+    const target = document.querySelector(`[data-paper-id="${highlightedPaperId}"]`);
+    if (!target) return;
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [highlightedPaperId, results]);
 
   return (
     <div className="space-y-4 pb-16 xl:pb-0">
@@ -93,7 +103,12 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
       </header>
 
       {results.map((paper) => (
-        <PaperCard key={paper._id} paper={paper} onRequireAuth={onRequireAuth} />
+        <PaperCard
+          key={paper._id}
+          paper={paper}
+          onRequireAuth={onRequireAuth}
+          isFocused={highlightedPaperId === paper._id}
+        />
       ))}
 
       {!results.length ? (

@@ -4,7 +4,7 @@ import { api } from "../../lib/api";
 import { cartoonAvatar } from "../../lib/avatar";
 import { ImageViewerModal } from "../common/ImageViewerModal";
 
-export function PaperCard({ paper, onRequireAuth }) {
+export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
   const { isAuthenticated } = useConvexAuth();
   const me = useQuery(api.users.current, isAuthenticated ? {} : "skip");
   const toggleLike = useMutation(api.papers.toggleLike);
@@ -135,7 +135,12 @@ export function PaperCard({ paper, onRequireAuth }) {
   };
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <article
+      data-paper-id={paper._id}
+      className={`group overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${
+        isFocused ? "border-blue-500 ring-2 ring-blue-300/70" : "border-slate-200/60"
+      }`}
+    >
       <div className="p-5 md:p-6">
         <div className="mb-4 flex items-center gap-3">
           <img

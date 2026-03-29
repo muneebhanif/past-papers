@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthButton } from "../auth/AuthButton";
 import mustLogo from "../../assets/must-logo.png";
 import { api } from "../../lib/api";
 
 export function Navbar({ search, setSearch }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const { isAuthenticated } = useConvexAuth();
   const markAllRead = useMutation(api.notifications.markAllRead);
   const notifications = useQuery(
@@ -50,6 +51,11 @@ export function Navbar({ search, setSearch }) {
     if (unreadCount > 0) {
       await markAllRead({});
     }
+  };
+
+  const openNotificationPost = (paperId) => {
+    setNotificationsOpen(false);
+    navigate(`/?paper=${paperId}`);
   };
 
   return (
@@ -139,12 +145,17 @@ export function Navbar({ search, setSearch }) {
                     <p className="px-2 pb-1 text-xs font-bold uppercase tracking-wider text-slate-500">Notifications</p>
                     <div className="max-h-80 space-y-1 overflow-auto">
                       {notifications.length ? notifications.map((item) => (
-                        <div key={item._id} className={`rounded-lg px-2 py-2 text-xs ${item.read ? "opacity-80" : "font-semibold"}`}>
+                        <button
+                          key={item._id}
+                          type="button"
+                          onClick={() => openNotificationPost(item.paperId)}
+                          className={`w-full rounded-lg px-2 py-2 text-left text-xs transition hover:bg-slate-100 dark:hover:bg-slate-800 ${item.read ? "opacity-80" : "font-semibold"}`}
+                        >
                           <p className={isDark ? "text-slate-200" : "text-slate-700"}>{notificationText(item)}</p>
                           {item.type === "comment" && item.content ? (
                             <p className="mt-0.5 truncate text-[11px] text-slate-500">“{item.content}”</p>
                           ) : null}
-                        </div>
+                        </button>
                       )) : (
                         <p className="px-2 py-3 text-xs text-slate-500">No notifications yet.</p>
                       )}
@@ -196,12 +207,17 @@ export function Navbar({ search, setSearch }) {
             <p className="px-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">Notifications</p>
             <div className="max-h-52 space-y-1 overflow-auto">
               {notifications.length ? notifications.map((item) => (
-                <div key={item._id} className={`rounded-lg px-2 py-2 text-xs ${item.read ? "opacity-80" : "font-semibold"}`}>
+                <button
+                  key={item._id}
+                  type="button"
+                  onClick={() => openNotificationPost(item.paperId)}
+                  className={`w-full rounded-lg px-2 py-2 text-left text-xs transition hover:bg-slate-100 dark:hover:bg-slate-800 ${item.read ? "opacity-80" : "font-semibold"}`}
+                >
                   <p className={isDark ? "text-slate-200" : "text-slate-700"}>{notificationText(item)}</p>
                   {item.type === "comment" && item.content ? (
                     <p className="mt-0.5 truncate text-[11px] text-slate-500">“{item.content}”</p>
                   ) : null}
-                </div>
+                </button>
               )) : (
                 <p className="px-2 py-3 text-xs text-slate-500">No notifications yet.</p>
               )}
