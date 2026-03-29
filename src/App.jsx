@@ -25,6 +25,7 @@ export default function App() {
 
   const normalizedPath = (location.pathname || "/").replace(/\/+$/, "") || "/";
   const isAdminRoute = normalizedPath === `/${ADMIN_PANEL_PATH}`;
+  const isProfileRoute = normalizedPath === "/profile";
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -73,7 +74,7 @@ export default function App() {
         {!isAdminRoute ? <RightRail /> : null}
       </main>
 
-      {!isAdminRoute ? (
+      {!isAdminRoute && !isProfileRoute ? (
         <footer className="border-t border-blue-800/20 bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 px-3 py-8 text-center text-white shadow-[0_-8px_30px_rgba(30,64,175,0.25)] md:px-4 md:py-10">
           <p className="text-sm font-extrabold tracking-[0.14em] text-white/95 md:text-base">
             MUST PAST PAPERS BY DEPARTMENT OF CSIT
