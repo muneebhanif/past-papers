@@ -11,6 +11,9 @@ export function PaperCard({ paper, onRequireAuth }) {
   const [comment, setComment] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isViewerOpen, setViewerOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
 
   const safePreviewUrl = paper.imageUrl;
   const safeFeedImageUrl = paper.imageUrl.includes("?")
@@ -19,6 +22,7 @@ export function PaperCard({ paper, onRequireAuth }) {
 
   const onDownload = async () => {
     try {
+      setDownloadError("");
       setIsDownloading(true);
       const response = await fetch(safePreviewUrl);
       if (!response.ok) {
@@ -34,8 +38,9 @@ export function PaperCard({ paper, onRequireAuth }) {
       a.click();
       a.remove();
       URL.revokeObjectURL(objectUrl);
+      setMenuOpen(false);
     } catch {
-      window.open(safePreviewUrl, "_blank", "noopener,noreferrer");
+      setDownloadError("Download failed. Please try again.");
     } finally {
       setIsDownloading(false);
     }
@@ -81,26 +86,27 @@ export function PaperCard({ paper, onRequireAuth }) {
           <span className="rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700">#{paper.subject.replace(/\s+/g, "_")}</span>
           <span className="rounded-md bg-blue-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-700">#{paper.year}</span>
         </div>
-
-        <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-sm text-slate-600">
-          <span>{paper.stats.likeCount} likes</span>
-          <span>{paper.stats.commentCount} comments</span>
-        </div>
-
       </div>
 
       <div className="relative aspect-[16/9] w-full overflow-hidden border-y border-slate-100 bg-slate-50">
-        <img
-          src={safeFeedImageUrl}
-          alt={paper.title}
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-          loading="lazy"
-          onError={(e) => {
-            e.currentTarget.src = safePreviewUrl;
-          }}
-        />
+        <button
+          type="button"
+          onClick={() => setViewerOpen(true)}
+          className="h-full w-full"
+          aria-label="Open paper"
+        >
+          <img
+            src={safeFeedImageUrl}
+            alt={paper.title}
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src = safePreviewUrl;
+            }}
+          />
+        </button>
         <div className="pointer-events-none absolute right-2 top-2 rounded bg-blue-700 px-2 py-1 text-[9px] font-bold text-white">
-          PREVIEW
+          TAP TO OPEN
         </div>
       </div>
 
@@ -110,7 +116,7 @@ export function PaperCard({ paper, onRequireAuth }) {
           <span>{paper.stats.commentCount} comments</span>
         </div>
 
-        <div className="mt-2 flex flex-wrap gap-2">
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <button
             onClick={() => {
               if (!isAuthenticated) {
@@ -127,22 +133,39 @@ export function PaperCard({ paper, onRequireAuth }) {
           >
             Like
           </button>
-          <a
-            href={safePreviewUrl}
-            target="_blank"
-            rel="noreferrer"
+          <button
+            onClick={() => setViewerOpen(true)}
             className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200"
           >
-            Preview
-          </a>
-          <button
-            onClick={() => void onDownload()}
-            disabled={isDownloading}
-            className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 disabled:opacity-60"
-          >
-            {isDownloading ? "Downloading..." : "Download"}
+            Open
           </button>
+
+          <div className="relative ml-auto">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((value) => !value)}
+              className="rounded-full bg-slate-100 px-3 py-2 text-sm font-bold text-slate-700 hover:bg-slate-200"
+              aria-label="Post menu"
+            >
+              •••
+            </button>
+
+            {menuOpen ? (
+              <div className="absolute right-0 top-12 z-20 w-40 rounded-xl border border-slate-200 bg-white p-1 shadow-lg">
+                <button
+                  type="button"
+                  onClick={() => void onDownload()}
+                  disabled={isDownloading}
+                  className="w-full rounded-lg px-3 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+                >
+                  {isDownloading ? "Downloading..." : "Download"}
+                </button>
+              </div>
+            ) : null}
+          </div>
         </div>
+
+        {downloadError ? <p className="mt-2 text-sm font-semibold text-red-600">{downloadError}</p> : null}
 
         <form onSubmit={onSubmitComment} className="mt-3 flex gap-2">
           <input
@@ -178,6 +201,28 @@ export function PaperCard({ paper, onRequireAuth }) {
           ))}
         </div>
       </div>
+
+      {isViewerOpen ? (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setViewerOpen(false)}
+        >
+          <div className="relative max-h-[92vh] w-full max-w-6xl" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setViewerOpen(false)}
+              className="absolute right-2 top-2 z-10 rounded-full bg-black/60 px-3 py-1 text-sm font-bold text-white"
+            >
+              ✕
+            </button>
+            <img
+              src={safePreviewUrl}
+              alt={paper.title}
+              className="max-h-[92vh] w-full rounded-xl bg-black object-contain"
+            />
+          </div>
+        </div>
+      ) : null}
     </article>
   );
 }
