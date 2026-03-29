@@ -55,6 +55,7 @@ export default function App() {
                   department={department}
                   setDepartment={setDepartment}
                   search={search}
+                  setSearch={setSearch}
                   onRequireAuth={() => setAuthPromptOpen(true)}
                 />
               }

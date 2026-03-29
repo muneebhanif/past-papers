@@ -15,7 +15,7 @@ const departmentSubtitle = (department) => {
   return `Department of ${department}`;
 };
 
-export function FeedPage({ department, setDepartment, search, onRequireAuth }) {
+export function FeedPage({ department, setDepartment, search, setSearch, onRequireAuth }) {
   const [paperType, setPaperType] = useState("All");
 
   const { results, status, loadMore } = usePaginatedQuery(
@@ -66,6 +66,15 @@ export function FeedPage({ department, setDepartment, search, onRequireAuth }) {
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
           {department === "All" ? "Academic Archive" : department}
         </h1>
+
+        <div className="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-2">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={`Search in ${department === "All" ? "all departments" : department}...`}
+            className="w-full border-none bg-transparent p-0 text-sm text-slate-700 placeholder:text-slate-400 focus:ring-0"
+          />
+        </div>
 
         <div className="mobile-scroll-hide mt-3 flex gap-2 overflow-x-auto pb-1">
           {PAPER_TABS.map((tab) => (
