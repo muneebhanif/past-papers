@@ -73,6 +73,17 @@ export default function App() {
         {!isAdminRoute ? <RightRail /> : null}
       </main>
 
+      {!isAdminRoute ? (
+        <footer className="border-t border-slate-200/70 bg-white/90 px-3 py-5 text-center md:px-4">
+          <p className="text-xs font-extrabold tracking-wider text-slate-700 md:text-sm">
+            MUST PAST PAPERS BY DEPARTMENT OF CSIT
+          </p>
+          <p className="mt-2 text-[10px] font-bold tracking-wider text-slate-500 md:text-xs">
+            © {new Date().getFullYear()} DESIGNED AND DEVELOPED BY CRUX DYNAMICS
+          </p>
+        </footer>
+      ) : null}
+
       {!isAdminRoute ? <MobileBottomNav /> : null}
       {!isAdminRoute ? (
         <GoogleLoginModal
