@@ -74,11 +74,12 @@ export default function App() {
       </main>
 
       {!isAdminRoute ? (
-        <footer className="border-t border-slate-200/70 bg-white/90 px-3 py-5 text-center md:px-4">
-          <p className="text-xs font-extrabold tracking-wider text-slate-700 md:text-sm">
+        <footer className="border-t border-blue-800/20 bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-700 px-3 py-8 text-center text-white shadow-[0_-8px_30px_rgba(30,64,175,0.25)] md:px-4 md:py-10">
+          <p className="text-sm font-extrabold tracking-[0.14em] text-white/95 md:text-base">
             MUST PAST PAPERS BY DEPARTMENT OF CSIT
           </p>
-          <p className="mt-2 text-[10px] font-bold tracking-wider text-slate-500 md:text-xs">
+          <div className="mx-auto mt-4 h-px w-40 bg-white/30" />
+          <p className="mt-3 text-[11px] font-bold tracking-[0.1em] text-blue-100 md:text-xs">
             © {new Date().getFullYear()} DESIGNED AND DEVELOPED BY CRUX DYNAMICS
           </p>
         </footer>
