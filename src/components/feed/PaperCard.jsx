@@ -2,6 +2,7 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { api } from "../../lib/api";
 import { cartoonAvatar } from "../../lib/avatar";
+import { ImageViewerModal } from "../common/ImageViewerModal";
 
 export function PaperCard({ paper, onRequireAuth }) {
   const { isAuthenticated } = useConvexAuth();
@@ -264,36 +265,12 @@ export function PaperCard({ paper, onRequireAuth }) {
         </div>
       </div>
 
-      {isViewerOpen ? (
-        <div
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setViewerOpen(false)}
-        >
-          <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              onClick={() => setViewerOpen(false)}
-              className="absolute right-2 top-2 z-10 rounded-full bg-black/60 px-3 py-1 text-sm font-bold text-white"
-            >
-              ✕
-            </button>
-            <div className="space-y-3 pr-1">
-              <img
-                src={safePreviewUrl}
-                alt={`${paper.title} front page`}
-                className="max-h-[92vh] w-full rounded-xl bg-black object-contain"
-              />
-              {secondPreviewUrl ? (
-                <img
-                  src={secondPreviewUrl}
-                  alt={`${paper.title} back page`}
-                  className="max-h-[92vh] w-full rounded-xl bg-black object-contain"
-                />
-              ) : null}
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ImageViewerModal
+        open={isViewerOpen}
+        onClose={() => setViewerOpen(false)}
+        images={[safePreviewUrl, secondPreviewUrl]}
+        title={paper.title}
+      />
     </article>
   );
 }

@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 import { DEPARTMENTS } from "../constants/departments";
 import { ACADEMIC_YEARS, PAPER_TYPES } from "../constants/academicOptions";
 import { cartoonAvatar } from "../lib/avatar";
+import { ImageViewerModal } from "../components/common/ImageViewerModal";
 
 export function ProfilePage() {
   const { isAuthenticated } = useConvexAuth();
@@ -300,36 +301,12 @@ export function ProfilePage() {
         </div>
       </section>
 
-      {activePreview ? (
-        <div
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setActivePreview(null)}
-        >
-          <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              onClick={() => setActivePreview(null)}
-              className="absolute right-2 top-2 z-10 rounded-full bg-black/60 px-3 py-1 text-sm font-bold text-white"
-            >
-              ✕
-            </button>
-            <div className="space-y-3 pr-1">
-              <img
-                src={activePreview.imageUrl}
-                alt={`${activePreview.title} front page`}
-                className="max-h-[92vh] w-full rounded-xl bg-black object-contain"
-              />
-              {activePreview.secondImageUrl ? (
-                <img
-                  src={activePreview.secondImageUrl}
-                  alt={`${activePreview.title} back page`}
-                  className="max-h-[92vh] w-full rounded-xl bg-black object-contain"
-                />
-              ) : null}
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ImageViewerModal
+        open={Boolean(activePreview)}
+        onClose={() => setActivePreview(null)}
+        images={[activePreview?.imageUrl, activePreview?.secondImageUrl]}
+        title={activePreview?.title ?? "Paper"}
+      />
     </div>
   );
 }

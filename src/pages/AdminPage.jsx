@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import { ImageViewerModal } from "../components/common/ImageViewerModal";
 
 export function AdminPage() {
   const login = useMutation(api.adminPanel.login);
@@ -350,36 +351,12 @@ export function AdminPage() {
         </div>
       )}
 
-      {activePaper ? (
-        <div
-          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-4"
-          onClick={() => setActivePaper(null)}
-        >
-          <div className="relative max-h-[92vh] w-full max-w-6xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              onClick={() => setActivePaper(null)}
-              className="absolute right-2 top-2 z-10 rounded-full bg-black/60 px-3 py-1 text-sm font-bold text-white"
-            >
-              ✕
-            </button>
-            <div className="space-y-3 pr-1">
-              <img
-                src={activePaper.imageUrl}
-                alt={`${activePaper.title} front page`}
-                className="max-h-[92vh] w-full rounded-xl bg-black object-contain"
-              />
-              {activePaper.secondImageUrl ? (
-                <img
-                  src={activePaper.secondImageUrl}
-                  alt={`${activePaper.title} back page`}
-                  className="max-h-[92vh] w-full rounded-xl bg-black object-contain"
-                />
-              ) : null}
-            </div>
-          </div>
-        </div>
-      ) : null}
+      <ImageViewerModal
+        open={Boolean(activePaper)}
+        onClose={() => setActivePaper(null)}
+        images={[activePaper?.imageUrl, activePaper?.secondImageUrl]}
+        title={activePaper?.title ?? "Paper"}
+      />
     </div>
   );
 }
