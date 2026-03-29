@@ -171,6 +171,84 @@ export const listMyUploads = query({
   },
 });
 
+export const updateMyPaper = mutation({
+  args: {
+    paperId: v.id("papers"),
+    title: v.string(),
+    subject: v.string(),
+    teacher: v.string(),
+    year: v.string(),
+    type: v.string(),
+    department: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx);
+    const paper = await ctx.db.get(args.paperId);
+
+    if (!paper) {
+      throw new ConvexError("Paper not found.");
+    }
+
+    if (paper.uploadedBy !== user._id) {
+      throw new ConvexError("You can only update your own uploads.");
+    }
+
+    const sanitize = (value, max = 100) => value.trim().slice(0, max);
+
+    await ctx.db.patch(args.paperId, {
+      title: sanitize(args.title),
+      subject: sanitize(args.subject),
+      teacher: sanitize(args.teacher),
+      year: sanitize(args.year, 20),
+      type: sanitize(args.type, 40),
+      department: sanitize(args.department, 80),
+      status: "pending",
+      reviewNote: undefined,
+      reviewedAt: undefined,
+      reviewedBy: undefined,
+    });
+
+    return { ok: true };
+  },
+});
+
+export const deleteMyPaper = mutation({
+  args: {
+    paperId: v.id("papers"),
+  },
+  handler: async (ctx, args) => {
+    const user = await requireUser(ctx);
+    const paper = await ctx.db.get(args.paperId);
+
+    if (!paper) {
+      throw new ConvexError("Paper not found.");
+    }
+
+    if (paper.uploadedBy !== user._id) {
+      throw new ConvexError("You can only delete your own uploads.");
+    }
+
+    const comments = await ctx.db
+      .query("comments")
+      .withIndex("by_paperId_createdAt", (q) => q.eq("paperId", args.paperId))
+      .collect();
+    for (const comment of comments) {
+      await ctx.db.delete(comment._id);
+    }
+
+    const likes = await ctx.db
+      .query("likes")
+      .withIndex("by_paperId", (q) => q.eq("paperId", args.paperId))
+      .collect();
+    for (const like of likes) {
+      await ctx.db.delete(like._id);
+    }
+
+    await ctx.db.delete(args.paperId);
+    return { ok: true };
+  },
+});
+
 export const listPending = query({
   args: {},
   handler: async (ctx) => {
