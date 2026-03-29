@@ -27,6 +27,7 @@ export function ProfilePage() {
   });
   const [paperBusy, setPaperBusy] = useState(false);
   const [paperMessage, setPaperMessage] = useState("");
+  const [activePreview, setActivePreview] = useState(null);
 
   useEffect(() => {
     setUsername(me?.username ?? "");
@@ -243,25 +244,50 @@ export function ProfilePage() {
 
         <div className="space-y-3">
           {uploads.map((paper) => (
-            <article key={paper._id} className="rounded-xl bg-slate-50 p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-base font-bold text-slate-900">{paper.title}</p>
-                  <p className="text-sm text-slate-600">{paper.subject} · {paper.teacher} · {paper.year}</p>
+            <article key={paper._id} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <div className="flex items-center justify-between gap-3 p-4">
+                <div className="min-w-0">
+                  <p className="truncate text-base font-bold text-slate-900">{paper.title}</p>
+                  <p className="truncate text-sm text-slate-600">{paper.subject} · {paper.teacher} · {paper.type} · {paper.year}</p>
                 </div>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    paper.status === "approved"
-                      ? "bg-emerald-100 text-emerald-700"
-                      : paper.status === "rejected"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-amber-100 text-amber-700"
-                  }`}
-                >
-                  {paper.status}
-                </span>
+                <div className="shrink-0">
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                      paper.status === "approved"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : paper.status === "rejected"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-amber-100 text-amber-700"
+                    }`}
+                  >
+                    {paper.status}
+                  </span>
+                </div>
               </div>
-              <div className="mt-2 flex gap-2">
+
+              <button
+                type="button"
+                onClick={() => setActivePreview(paper)}
+                className="block h-56 w-full overflow-hidden border-y border-slate-100 bg-slate-50 md:h-72"
+              >
+                <img
+                  src={paper.imageUrl.includes("?") ? `${paper.imageUrl}&tr=w-1200,q-80` : `${paper.imageUrl}?tr=w-1200,q-80`}
+                  alt={paper.title}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.src = paper.imageUrl;
+                  }}
+                />
+              </button>
+
+              <div className="flex gap-2 p-4">
+                <button
+                  onClick={() => setActivePreview(paper)}
+                  className="rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700"
+                >
+                  Open
+                </button>
                 <button
                   onClick={() => onEditUpload(paper)}
                   className="rounded-lg bg-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-700"
@@ -277,7 +303,7 @@ export function ProfilePage() {
                 </button>
               </div>
               {paper.status === "rejected" && paper.reviewNote ? (
-                <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+                <p className="mx-4 mb-4 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
                   Rejection note: {paper.reviewNote}
                 </p>
               ) : null}
@@ -286,6 +312,28 @@ export function ProfilePage() {
           {!uploads.length ? <p className="text-sm text-slate-500">No uploads yet.</p> : null}
         </div>
       </section>
+
+      {activePreview ? (
+        <div
+          className="fixed inset-0 z-[120] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => setActivePreview(null)}
+        >
+          <div className="relative max-h-[92vh] w-full max-w-6xl" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setActivePreview(null)}
+              className="absolute right-2 top-2 z-10 rounded-full bg-black/60 px-3 py-1 text-sm font-bold text-white"
+            >
+              ✕
+            </button>
+            <img
+              src={activePreview.imageUrl}
+              alt={activePreview.title}
+              className="max-h-[92vh] w-full rounded-xl bg-black object-contain"
+            />
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
