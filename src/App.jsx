@@ -22,6 +22,7 @@ export default function App() {
   const [department, setDepartment] = useState(DEPARTMENTS[0]);
   const [search, setSearch] = useState("");
   const [isAuthPromptOpen, setAuthPromptOpen] = useState(false);
+  const [isDepartmentSheetOpen, setDepartmentSheetOpen] = useState(false);
 
   const normalizedPath = (location.pathname || "/").replace(/\/+$/, "") || "/";
   const isAdminRoute = normalizedPath === `/${ADMIN_PANEL_PATH}`;
@@ -33,7 +34,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f0f2f5] text-slate-900">
-      {!isAdminRoute ? <Navbar search={search} setSearch={setSearch} /> : null}
+      {!isAdminRoute ? (
+        <Navbar
+          search={search}
+          setSearch={setSearch}
+          selectedDepartment={department}
+          onOpenDepartments={() => setDepartmentSheetOpen(true)}
+        />
+      ) : null}
 
       <main
         className={
@@ -72,6 +80,47 @@ export default function App() {
       </main>
 
       {!isAdminRoute ? <MobileBottomNav /> : null}
+      {!isAdminRoute && isDepartmentSheetOpen ? (
+        <div
+          className="fixed inset-0 z-[110] flex items-end bg-black/40 xl:hidden"
+          onClick={() => setDepartmentSheetOpen(false)}
+        >
+          <div
+            className="max-h-[78vh] w-full rounded-t-2xl bg-white p-4 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500">Departments</h3>
+              <button
+                type="button"
+                onClick={() => setDepartmentSheetOpen(false)}
+                className="rounded-full bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700"
+              >
+                Close
+              </button>
+            </div>
+            <div className="max-h-[62vh] space-y-1 overflow-y-auto">
+              {DEPARTMENTS.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => {
+                    setDepartment(item);
+                    setDepartmentSheetOpen(false);
+                  }}
+                  className={`w-full rounded-lg px-3 py-2 text-left text-sm font-medium ${
+                    department === item
+                      ? "bg-blue-100 text-blue-700"
+                      : "text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ) : null}
       {!isAdminRoute ? (
         <GoogleLoginModal
           open={isAuthPromptOpen}
