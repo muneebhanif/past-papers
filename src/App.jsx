@@ -33,7 +33,7 @@ export default function App() {
   }, [isAuthenticated, syncCurrentUser]);
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5] text-slate-900">
+    <div className="app-shell min-h-screen text-slate-900">
       {!isAdminRoute ? <Navbar search={search} setSearch={setSearch} /> : null}
 
       <main

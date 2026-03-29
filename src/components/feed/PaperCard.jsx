@@ -14,6 +14,7 @@ export function PaperCard({ paper, onRequireAuth }) {
   const [isPosting, setIsPosting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isViewerOpen, setViewerOpen] = useState(false);
+  const [viewerImages, setViewerImages] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [downloadError, setDownloadError] = useState("");
 
@@ -27,6 +28,11 @@ export function PaperCard({ paper, onRequireAuth }) {
       ? `${secondPreviewUrl}&tr=w-1200,q-80`
       : `${secondPreviewUrl}?tr=w-1200,q-80`)
     : "";
+
+  const openViewer = (images) => {
+    setViewerImages(images.filter(Boolean));
+    setViewerOpen(true);
+  };
 
   const onDownload = async () => {
     try {
@@ -120,7 +126,7 @@ export function PaperCard({ paper, onRequireAuth }) {
         <div className="grid h-[24rem] w-full grid-cols-2 overflow-hidden border-y border-slate-100 bg-slate-50 md:h-[32rem] lg:h-[37rem]">
           <button
             type="button"
-            onClick={() => setViewerOpen(true)}
+            onClick={() => openViewer([safePreviewUrl])}
             className="h-full w-full border-r border-slate-100"
             aria-label="Open paper front page"
           >
@@ -137,7 +143,7 @@ export function PaperCard({ paper, onRequireAuth }) {
 
           <button
             type="button"
-            onClick={() => setViewerOpen(true)}
+            onClick={() => openViewer([secondPreviewUrl])}
             className="h-full w-full"
             aria-label="Open paper back page"
           >
@@ -156,7 +162,7 @@ export function PaperCard({ paper, onRequireAuth }) {
         <div className="relative h-[24rem] w-full overflow-hidden border-y border-slate-100 bg-slate-50 md:h-[32rem] lg:h-[37rem]">
           <button
             type="button"
-            onClick={() => setViewerOpen(true)}
+            onClick={() => openViewer([safePreviewUrl])}
             className="h-full w-full"
             aria-label="Open paper"
           >
@@ -195,12 +201,6 @@ export function PaperCard({ paper, onRequireAuth }) {
             }`}
           >
             Like
-          </button>
-          <button
-            onClick={() => setViewerOpen(true)}
-            className="rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200"
-          >
-            Open
           </button>
 
           <div className="relative ml-auto">
@@ -267,8 +267,11 @@ export function PaperCard({ paper, onRequireAuth }) {
 
       <ImageViewerModal
         open={isViewerOpen}
-        onClose={() => setViewerOpen(false)}
-        images={[safePreviewUrl, secondPreviewUrl]}
+        onClose={() => {
+          setViewerOpen(false);
+          setViewerImages([]);
+        }}
+        images={viewerImages}
         title={paper.title}
       />
     </article>
