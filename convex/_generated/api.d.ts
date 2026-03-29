@@ -14,6 +14,7 @@ import type * as comments from "../comments.js";
 import type * as http from "../http.js";
 import type * as imagekit from "../imagekit.js";
 import type * as lib from "../lib.js";
+import type * as notifications from "../notifications.js";
 import type * as papers from "../papers.js";
 import type * as uploadAuthLogs from "../uploadAuthLogs.js";
 import type * as users from "../users.js";
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   imagekit: typeof imagekit;
   lib: typeof lib;
+  notifications: typeof notifications;
   papers: typeof papers;
   uploadAuthLogs: typeof uploadAuthLogs;
   users: typeof users;
