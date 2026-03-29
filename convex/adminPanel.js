@@ -78,10 +78,7 @@ export const login = mutation({
       throw new ConvexError("Invalid admin credentials.");
     }
 
-    const token =
-      `${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}_${Math.random()
-        .toString(36)
-        .slice(2)}`;
+    const token = `${crypto.randomUUID()}_${crypto.randomUUID()}`;
     const now = Date.now();
 
     const existing = await ctx.db

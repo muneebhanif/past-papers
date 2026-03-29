@@ -59,7 +59,6 @@ export const byId = query({
 export const updateProfile = mutation({
   args: {
     username: v.string(),
-    image: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -81,14 +80,8 @@ export const updateProfile = mutation({
       throw new Error("Username is already taken.");
     }
 
-    const image = args.image?.trim();
-    if (image && !/^https?:\/\//i.test(image)) {
-      throw new Error("Profile image must be a valid URL.");
-    }
-
     await ctx.db.patch(userId, {
       username,
-      image: image || undefined,
     });
 
     const updated = await ctx.db.get(userId);

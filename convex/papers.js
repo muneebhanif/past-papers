@@ -194,9 +194,29 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const user = await requireUser(ctx);
     const now = Date.now();
+    const imageUrl = sanitizeText(args.imageUrl, 600);
 
-    if (!args.imageUrl.startsWith("http")) {
+    let parsedImageUrl;
+    try {
+      parsedImageUrl = new URL(imageUrl);
+    } catch {
       throw new ConvexError("Invalid image URL.");
+    }
+
+    if (parsedImageUrl.protocol !== "https:") {
+      throw new ConvexError("Image URL must use HTTPS.");
+    }
+
+    const endpoint = process.env.IMAGEKIT_URL_ENDPOINT;
+    if (endpoint) {
+      try {
+        const endpointHost = new URL(endpoint).hostname;
+        if (parsedImageUrl.hostname !== endpointHost) {
+          throw new ConvexError("Image URL host is not allowed.");
+        }
+      } catch {
+        throw new ConvexError("Server image host configuration is invalid.");
+      }
     }
 
     const recent15MinUploads = await ctx.db
@@ -225,7 +245,7 @@ export const create = mutation({
 
     return ctx.db.insert("papers", {
       ...validated,
-      imageUrl: sanitizeText(args.imageUrl, 600),
+      imageUrl,
       uploadedBy: user._id,
       status: "pending",
       reviewNote: undefined,

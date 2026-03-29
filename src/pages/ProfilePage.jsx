@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { DEPARTMENTS } from "../constants/departments";
 import { ACADEMIC_YEARS, PAPER_TYPES } from "../constants/academicOptions";
+import { cartoonAvatar } from "../lib/avatar";
 
 export function ProfilePage() {
   const { isAuthenticated } = useConvexAuth();
@@ -13,7 +14,6 @@ export function ProfilePage() {
   const deleteMyPaper = useMutation(api.papers.deleteMyPaper);
 
   const [username, setUsername] = useState("");
-  const [image, setImage] = useState("");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [editingPaperId, setEditingPaperId] = useState("");
@@ -31,8 +31,7 @@ export function ProfilePage() {
 
   useEffect(() => {
     setUsername(me?.username ?? "");
-    setImage(me?.image ?? "");
-  }, [me?.username, me?.image]);
+  }, [me?.username]);
 
   if (!isAuthenticated) {
     return <p className="rounded-xl bg-white p-6 text-sm text-slate-600 shadow-sm">Please sign in to view profile.</p>;
@@ -43,7 +42,7 @@ export function ProfilePage() {
     setMessage("");
     setSaving(true);
     try {
-      await updateProfile({ username, image: image.trim() || undefined });
+      await updateProfile({ username });
       setMessage("Profile updated.");
     } catch (err) {
       setMessage(err?.message || "Could not update profile.");
@@ -111,7 +110,7 @@ export function ProfilePage() {
         <div className="h-28 rounded-xl bg-gradient-to-r from-blue-100 to-indigo-100" />
         <div className="-mt-10 flex items-end gap-4 px-4">
           <img
-            src={me?.image || "https://i.pravatar.cc/100?img=48"}
+            src={cartoonAvatar(me?.username || me?._id)}
             alt={me?.username ?? me?.name ?? "User"}
             className="h-20 w-20 rounded-2xl border-4 border-white object-cover"
           />
@@ -137,18 +136,6 @@ export function ProfilePage() {
               required
             />
           </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Profile picture URL
-            </label>
-            <input
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
-              placeholder="https://..."
-              className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"
-            />
-          </div>
-
           {message ? <p className="text-sm font-semibold text-slate-600">{message}</p> : null}
 
           <button

@@ -1,6 +1,7 @@
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { api } from "../../lib/api";
+import { cartoonAvatar } from "../../lib/avatar";
 
 export function PaperCard({ paper, onRequireAuth }) {
   const { isAuthenticated } = useConvexAuth();
@@ -68,7 +69,7 @@ export function PaperCard({ paper, onRequireAuth }) {
       <div className="p-5 md:p-6">
         <div className="mb-4 flex items-center gap-3">
           <img
-            src={paper.uploader.image || "https://i.pravatar.cc/100?img=12"}
+            src={cartoonAvatar(paper.uploader.name || paper.uploader._id)}
             alt={paper.uploader.name}
             className="h-8 w-8 rounded-full object-cover"
             loading="lazy"
@@ -205,7 +206,7 @@ export function PaperCard({ paper, onRequireAuth }) {
             <div key={item._id} className="rounded-lg bg-slate-50 px-3 py-2 text-sm">
               <div className="mb-1 flex items-center gap-2">
                 <img
-                  src={item.user.image || "https://i.pravatar.cc/100?img=32"}
+                  src={cartoonAvatar(item.user.name || item.user._id)}
                   alt={item.user.name}
                   className="h-6 w-6 rounded-full object-cover"
                   loading="lazy"
