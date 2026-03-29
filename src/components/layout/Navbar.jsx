@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Bell, Heart, MessageSquare, Moon, Sun } from "lucide-react";
 import { AuthButton } from "../auth/AuthButton";
 import mustLogo from "../../assets/must-logo.png";
 import { api } from "../../lib/api";
@@ -44,6 +45,13 @@ export function Navbar({ search, setSearch }) {
       return `${item.actorName} liked ${item.paperTitle}`;
     }
     return `${item.actorName} commented on ${item.paperTitle}`;
+  };
+
+  const NotificationTypeIcon = ({ type }) => {
+    if (type === "like") {
+      return <Heart className="h-3.5 w-3.5" aria-hidden="true" />;
+    }
+    return <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />;
   };
 
   const openNotifications = async () => {
@@ -118,7 +126,10 @@ export function Navbar({ search, setSearch }) {
               }`}
               aria-label="Toggle theme"
             >
-              {theme === "dark" ? "☀ Light" : "🌙 Dark"}
+              <span className="inline-flex items-center gap-1.5">
+                {theme === "dark" ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
+                {theme === "dark" ? "Light" : "Dark"}
+              </span>
             </button>
 
             {isAuthenticated ? (
@@ -130,7 +141,10 @@ export function Navbar({ search, setSearch }) {
                     isDark ? "bg-slate-800 text-slate-200" : "bg-slate-100 text-slate-700"
                   }`}
                 >
-                  🔔
+                  <span className="inline-flex items-center gap-1.5">
+                    <Bell className="h-4 w-4" aria-hidden="true" />
+                    Notifications
+                  </span>
                   {unreadCount ? (
                     <span className="ml-1 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
                       {unreadCount > 9 ? "9+" : unreadCount}
@@ -151,6 +165,10 @@ export function Navbar({ search, setSearch }) {
                           onClick={() => openNotificationPost(item.paperId)}
                           className={`w-full rounded-lg px-2 py-2 text-left text-xs transition hover:bg-slate-100 dark:hover:bg-slate-800 ${item.read ? "opacity-80" : "font-semibold"}`}
                         >
+                          <p className="mb-0.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-blue-600">
+                            <NotificationTypeIcon type={item.type} />
+                            {item.type}
+                          </p>
                           <p className={isDark ? "text-slate-200" : "text-slate-700"}>{notificationText(item)}</p>
                           {item.type === "comment" && item.content ? (
                             <p className="mt-0.5 truncate text-[11px] text-slate-500">“{item.content}”</p>
@@ -178,7 +196,7 @@ export function Navbar({ search, setSearch }) {
                 }`}
                 aria-label="Notifications"
               >
-                🔔
+                <Bell className="h-4 w-4" aria-hidden="true" />
                 {unreadCount ? (
                   <span className="absolute -right-1 -top-1 rounded-full bg-red-500 px-1 py-0.5 text-[9px] font-bold text-white">
                     {unreadCount > 9 ? "9+" : unreadCount}
@@ -194,7 +212,7 @@ export function Navbar({ search, setSearch }) {
               }`}
               aria-label="Toggle theme"
             >
-              {theme === "dark" ? "☀" : "🌙"}
+              {theme === "dark" ? <Sun className="h-4 w-4" aria-hidden="true" /> : <Moon className="h-4 w-4" aria-hidden="true" />}
             </button>
             <AuthButton />
           </div>
@@ -213,6 +231,10 @@ export function Navbar({ search, setSearch }) {
                   onClick={() => openNotificationPost(item.paperId)}
                   className={`w-full rounded-lg px-2 py-2 text-left text-xs transition hover:bg-slate-100 dark:hover:bg-slate-800 ${item.read ? "opacity-80" : "font-semibold"}`}
                 >
+                  <p className="mb-0.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-blue-600">
+                    <NotificationTypeIcon type={item.type} />
+                    {item.type}
+                  </p>
                   <p className={isDark ? "text-slate-200" : "text-slate-700"}>{notificationText(item)}</p>
                   {item.type === "comment" && item.content ? (
                     <p className="mt-0.5 truncate text-[11px] text-slate-500">“{item.content}”</p>
