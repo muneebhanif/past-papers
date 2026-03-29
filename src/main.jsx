@@ -6,7 +6,7 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 
-const convexUrl = import.meta.env.VITE_CONVEX_URL;
+const convexUrl = (import.meta.env.VITE_CONVEX_URL ?? "").trim().replace(/\/+$/, "");
 
 if (!convexUrl) {
   throw new Error("Missing VITE_CONVEX_URL. Configure it in your environment.");
