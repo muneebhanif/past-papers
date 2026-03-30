@@ -348,6 +348,12 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
             <span>{paper.teacher}</span>
             <span className="text-slate-300">•</span>
             <span>{paper.type}</span>
+            {paper.semester ? (
+              <>
+                <span className="text-slate-300">•</span>
+                <span>{`Semester ${paper.semester}`}</span>
+              </>
+            ) : null}
             <span className="text-slate-300">•</span>
             <span className="font-semibold text-slate-700">{paper.year}</span>
           </div>
