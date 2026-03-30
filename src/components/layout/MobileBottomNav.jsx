@@ -6,7 +6,6 @@ export function MobileBottomNav() {
   const location = useLocation();
   const [isDark, setIsDark] = useState(false);
   const normalizedPath = (location.pathname || "/").replace(/\/+$/, "") || "/";
-  const view = new URLSearchParams(location.search).get("view") || "";
 
   useEffect(() => {
     if (typeof document === "undefined") return;
@@ -22,27 +21,20 @@ export function MobileBottomNav() {
   }, []);
 
   const leftItems = [
-    { to: "/", label: "Home", icon: Home, view: "" },
-    { to: "/?view=subjects", label: "Subjects", icon: Grid2x2, view: "subjects" },
+    { to: "/", label: "Home", icon: Home },
+    { to: "/", label: "Subjects", icon: Grid2x2 },
   ];
 
   const rightItems = [
-    { to: "/?view=saved", label: "Saved", icon: Bookmark, view: "saved" },
-    { to: "/profile", label: "Profile", icon: User, view: "" },
+    { to: "/", label: "Saved", icon: Bookmark },
+    { to: "/profile", label: "Profile", icon: User },
   ];
 
   const isActive = (item) => {
-    if (item.to.startsWith("/profile")) {
+    if (item.label === "Profile") {
       return normalizedPath === "/profile";
     }
-
-    if (normalizedPath !== "/") return false;
-
-    if (item.view) {
-      return view === item.view;
-    }
-
-    return !view;
+    return item.label === "Home" && normalizedPath === "/";
   };
 
   const itemBaseClass = `flex flex-col items-center gap-1 transition-colors ${
@@ -66,7 +58,7 @@ export function MobileBottomNav() {
             const active = isActive(item);
             return (
               <Link key={item.label} to={item.to} className={`${itemBaseClass} ${active ? activeClass : ""}`}>
-                <Icon className="h-5 w-5" />
+                <Icon className={`h-5 w-5 ${active ? "fill-current" : ""}`} />
                 <span className="text-[10px] font-bold">{item.label}</span>
               </Link>
             );
@@ -91,7 +83,7 @@ export function MobileBottomNav() {
             const active = isActive(item);
             return (
               <Link key={item.label} to={item.to} className={`${itemBaseClass} ${active ? activeClass : ""}`}>
-                <Icon className="h-5 w-5" />
+                <Icon className={`h-5 w-5 ${active ? "fill-current" : ""}`} />
                 <span className="text-[10px] font-bold">{item.label}</span>
               </Link>
             );

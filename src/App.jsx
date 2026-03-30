@@ -75,7 +75,7 @@ export default function App() {
       </main>
 
       {!isAdminRoute && !isProfileRoute ? (
-        <footer className="border-t border-slate-200 bg-white px-3 py-6 pb-[calc(env(safe-area-inset-bottom)+4.75rem)] text-center text-slate-900 md:px-4 md:py-10 md:pb-10">
+        <footer className="border-t border-slate-200 bg-white px-3 py-6 pb-[calc(env(safe-area-inset-bottom)+6.5rem)] text-center text-slate-900 md:px-4 md:py-10 md:pb-10">
           <p className="text-sm font-extrabold tracking-[0.14em] text-slate-900 md:text-base">
             MUST PAST PAPERS BY DEPARTMENT OF CSIT
           </p>
