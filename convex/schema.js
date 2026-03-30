@@ -32,6 +32,7 @@ export default defineSchema({
     teacher: v.string(),
     year: v.string(),
     type: v.string(),
+    semester: v.optional(v.string()),
     department: v.string(),
     imageUrl: v.string(),
     secondImageUrl: v.optional(v.string()),

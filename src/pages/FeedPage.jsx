@@ -5,6 +5,7 @@ import { api } from "../lib/api";
 import { LoginSplash } from "../components/feed/LoginSplash";
 import { PaperCard } from "../components/feed/PaperCard";
 import { DEPARTMENTS } from "../constants/departments";
+import { SEMESTERS } from "../constants/academicOptions";
 
 const PAPER_TABS = ["All", "Midterm", "Terminal", "Summer", "Improve"];
 
@@ -18,12 +19,13 @@ const departmentSubtitle = (department) => {
 
 export function FeedPage({ department, setDepartment, search, setSearch, onRequireAuth }) {
   const [paperType, setPaperType] = useState("All");
+  const [semester, setSemester] = useState("All");
   const location = useLocation();
   const highlightedPaperId = new URLSearchParams(location.search).get("paper") || "";
 
   const { results, status, loadMore } = usePaginatedQuery(
     api.papers.listApproved,
-    { department, search, paperType },
+    { department, search, paperType, semester },
     { initialNumItems: 6 },
   );
 
@@ -77,13 +79,23 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
           {department === "All" ? "Academic Archive" : department}
         </h1>
 
-        <div className="mt-3 rounded-xl border border-slate-200 bg-white px-3 py-2">
+        <div className="mt-3 grid gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 md:grid-cols-[minmax(0,1fr)_12rem] md:items-center">
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={`Search in ${department === "All" ? "all departments" : department}...`}
             className="w-full border-none bg-transparent p-0 text-sm text-slate-700 placeholder:text-slate-400 focus:ring-0"
           />
+          <select
+            value={semester}
+            onChange={(e) => setSemester(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-700"
+          >
+            <option value="All">All semesters</option>
+            {SEMESTERS.map((semesterOption) => (
+              <option key={semesterOption} value={semesterOption}>{`Semester ${semesterOption}`}</option>
+            ))}
+          </select>
         </div>
 
         <div className="mobile-scroll-hide mt-3 flex gap-2 overflow-x-auto pb-1">

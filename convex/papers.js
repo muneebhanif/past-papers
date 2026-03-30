@@ -7,6 +7,7 @@ import { requireAdmin, requireUser } from "./lib";
 const normalize = (value) => value.trim().toLowerCase();
 const sanitizeText = (value, max = 100) => value.trim().replace(/\s+/g, " ").slice(0, max);
 const PAPER_TYPES = new Set(["Midterm", "Terminal", "Improve", "Summer"]);
+const SEMESTERS = new Set(["1", "2", "3", "4", "5", "6", "7", "8"]);
 const YEAR_PATTERN = /^(Fall|Spring|Summer)\s20\d{2}$/;
 
 const isValidAcademicYear = (value) => {
@@ -21,6 +22,7 @@ const validatePaperArgs = (args) => {
   const teacher = sanitizeText(args.teacher, 80);
   const year = sanitizeText(args.year, 20);
   const type = sanitizeText(args.type, 40);
+  const semester = typeof args.semester === "string" ? sanitizeText(args.semester, 4) : "";
   const department = sanitizeText(args.department, 80);
 
   if (title.length < 4) {
@@ -38,8 +40,19 @@ const validatePaperArgs = (args) => {
   if (!isValidAcademicYear(year)) {
     throw new ConvexError("Invalid academic year.");
   }
+  if (semester && !SEMESTERS.has(semester)) {
+    throw new ConvexError("Invalid semester.");
+  }
 
-  return { title, subject, teacher, year, type, department };
+  return {
+    title,
+    subject,
+    teacher,
+    year,
+    type,
+    ...(semester ? { semester } : {}),
+    department,
+  };
 };
 
 const enrichPaper = async (ctx, paper, viewerId) => {
@@ -76,11 +89,13 @@ export const listApproved = query({
     department: v.optional(v.string()),
     search: v.optional(v.string()),
     paperType: v.optional(v.string()),
+    semester: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const viewerUserId = await getAuthUserId(ctx);
     const searchText = normalize(args.search ?? "");
     const selectedType = sanitizeText(args.paperType ?? "", 40);
+    const selectedSemester = sanitizeText(args.semester ?? "", 10);
 
     if (args.paginationOpts.numItems > 20) {
       throw new ConvexError("Too many items requested at once.");
@@ -92,6 +107,9 @@ export const listApproved = query({
 
     if (selectedType && selectedType !== "All" && !PAPER_TYPES.has(selectedType)) {
       throw new ConvexError("Invalid paper type filter.");
+    }
+    if (selectedSemester && selectedSemester !== "All" && !SEMESTERS.has(selectedSemester)) {
+      throw new ConvexError("Invalid semester filter.");
     }
 
     let q;
@@ -129,8 +147,18 @@ export const listApproved = query({
     const page = await q.paginate(args.paginationOpts);
 
     const filtered = page.page.filter((paper) => {
+      if (selectedSemester && selectedSemester !== "All" && paper.semester !== selectedSemester) {
+        return false;
+      }
       if (!searchText) return true;
-      const haystack = [paper.title, paper.subject, paper.teacher, paper.year, paper.type]
+      const haystack = [
+        paper.title,
+        paper.subject,
+        paper.teacher,
+        paper.year,
+        paper.type,
+        paper.semester ? `semester ${paper.semester}` : "",
+      ]
         .join(" ")
         .toLowerCase();
       return haystack.includes(searchText);
@@ -153,11 +181,21 @@ export const listApproved = query({
       ownPendingOrRejected = ownPapers.filter((paper) => {
         if (paper.status === "approved") return false;
         if (selectedType && selectedType !== "All" && paper.type !== selectedType) return false;
+        if (selectedSemester && selectedSemester !== "All" && paper.semester !== selectedSemester) {
+          return false;
+        }
         if (args.department && args.department !== "All" && paper.department !== args.department) {
           return false;
         }
         if (!searchText) return true;
-        const haystack = [paper.title, paper.subject, paper.teacher, paper.year, paper.type]
+        const haystack = [
+          paper.title,
+          paper.subject,
+          paper.teacher,
+          paper.year,
+          paper.type,
+          paper.semester ? `semester ${paper.semester}` : "",
+        ]
           .join(" ")
           .toLowerCase();
         return haystack.includes(searchText);
@@ -188,6 +226,7 @@ export const create = mutation({
     teacher: v.string(),
     year: v.string(),
     type: v.string(),
+    semester: v.optional(v.string()),
     department: v.string(),
     imageUrl: v.string(),
     secondImageUrl: v.optional(v.string()),
@@ -299,6 +338,7 @@ export const updateMyPaper = mutation({
     teacher: v.string(),
     year: v.string(),
     type: v.string(),
+    semester: v.optional(v.string()),
     department: v.string(),
   },
   handler: async (ctx, args) => {

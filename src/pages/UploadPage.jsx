@@ -1,7 +1,7 @@
 import { useAction, useConvexAuth, useMutation } from "convex/react";
 import { useEffect, useState } from "react";
 import { DEPARTMENTS } from "../constants/departments";
-import { ACADEMIC_YEARS, PAPER_TYPES } from "../constants/academicOptions";
+import { ACADEMIC_YEARS, PAPER_TYPES, SEMESTERS } from "../constants/academicOptions";
 import { api } from "../lib/api";
 
 const sanitizeText = (value, max = 120) => value.trim().replace(/\s+/g, " ").slice(0, max);
@@ -98,6 +98,7 @@ export function UploadPage({ onRequireAuth }) {
     teacher: "",
     year: ACADEMIC_YEARS[0],
     type: "Midterm",
+    semester: "1",
     department: "Computer Science",
   });
   const [frontFile, setFrontFile] = useState(null);
@@ -146,6 +147,7 @@ export function UploadPage({ onRequireAuth }) {
       teacher: sanitizeText(form.teacher, 80),
       year: sanitizeText(form.year, 20),
       type: sanitizeText(form.type, 40),
+      semester: sanitizeText(form.semester, 4),
       department: sanitizeText(form.department, 80),
     };
 
@@ -154,6 +156,7 @@ export function UploadPage({ onRequireAuth }) {
     if (clean.teacher.length < 2) return setError("Teacher must be at least 2 characters.");
     if (!PAPER_TYPES.includes(clean.type)) return setError("Invalid paper type selected.");
     if (!ACADEMIC_YEARS.includes(clean.year)) return setError("Invalid year selected.");
+    if (!SEMESTERS.includes(clean.semester)) return setError("Invalid semester selected.");
 
     const validateJpeg = (selectedFile, label, required = false) => {
       if (!selectedFile) {
@@ -230,6 +233,7 @@ export function UploadPage({ onRequireAuth }) {
         teacher: "",
         year: ACADEMIC_YEARS[0],
         type: "Midterm",
+        semester: "1",
         department: "Computer Science",
       });
       setFrontFile(null);
@@ -269,6 +273,17 @@ export function UploadPage({ onRequireAuth }) {
               ))}
             </select>
           </div>
+
+          <select
+            value={form.semester}
+            onChange={(e) => setForm((p) => ({ ...p, semester: e.target.value }))}
+            className="w-full rounded-xl border-none bg-slate-100 px-3 py-3 text-sm"
+            required
+          >
+            {SEMESTERS.map((semesterOption) => (
+              <option key={semesterOption} value={semesterOption}>{`Semester ${semesterOption}`}</option>
+            ))}
+          </select>
 
           <input
             value={form.title}
