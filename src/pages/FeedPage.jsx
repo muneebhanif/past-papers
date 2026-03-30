@@ -1,4 +1,4 @@
-import { usePaginatedQuery } from "convex/react";
+import { useConvexAuth, usePaginatedQuery, useQuery } from "convex/react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { api } from "../lib/api";
@@ -21,6 +21,8 @@ import {
   SlidersHorizontal,
   LayoutGrid,
   List,
+  Trophy,
+  Crown,
 } from "lucide-react";
 
 const PAPER_TABS = [
@@ -147,10 +149,15 @@ const FilterPill = ({ label, value, onClear }) => (
 /*  Main FeedPage                                                     */
 /* ------------------------------------------------------------------ */
 export function FeedPage({ department, setDepartment, search, setSearch, onRequireAuth }) {
+  const { isAuthenticated } = useConvexAuth();
+  const me = useQuery(api.users.current, isAuthenticated ? {} : "skip");
+  const rightRailData = useQuery(api.papers.rightRailData);
+
   const [paperType, setPaperType] = useState("All");
   const [semester, setSemester] = useState("All");
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState("feed");
+  const [showContributorsPopup, setShowContributorsPopup] = useState(false);
   const location = useLocation();
   const highlightedPaperId = new URLSearchParams(location.search).get("paper") || "";
   const searchInputRef = useRef(null);
@@ -165,6 +172,26 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
   );
 
   const displayedPapers = results.slice(0, 6);
+  const topThreeContributors = (rightRailData?.topContributors ?? []).slice(0, 3);
+  const myRankIndex = topThreeContributors.findIndex((item) => item.userId === me?._id);
+  const myRank = myRankIndex >= 0 ? myRankIndex + 1 : null;
+
+  useEffect(() => {
+    if (!topThreeContributors.length) return;
+
+    const today = new Date().toISOString().slice(0, 10);
+    const dismissedOn = localStorage.getItem("top_contributors_popup_dismissed_on");
+
+    if (dismissedOn !== today) {
+      setShowContributorsPopup(true);
+    }
+  }, [topThreeContributors.length]);
+
+  const dismissContributorsPopup = () => {
+    const today = new Date().toISOString().slice(0, 10);
+    localStorage.setItem("top_contributors_popup_dismissed_on", today);
+    setShowContributorsPopup(false);
+  };
 
   // Scroll to highlighted paper
   useEffect(() => {
@@ -517,6 +544,52 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
         </svg>
       </button>
+
+      {/* ============================================================ */}
+      {/*  MOBILE TOP CONTRIBUTORS POPUP                               */}
+      {/* ============================================================ */}
+      {showContributorsPopup && topThreeContributors.length ? (
+        <div className="fixed inset-x-3 bottom-[5.15rem] z-40 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl xl:hidden">
+          <div className="mb-2 flex items-start justify-between gap-3">
+            <div>
+              <p className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-blue-700">
+                <Trophy className="h-3.5 w-3.5" />
+                Top Contributors
+              </p>
+              <p className="mt-0.5 text-[11px] text-slate-500">Top 3 this week — keep uploading!</p>
+            </div>
+            <button
+              type="button"
+              onClick={dismissContributorsPopup}
+              className="rounded-full p-1 text-slate-400 active:bg-slate-100"
+              aria-label="Close top contributors popup"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="space-y-1.5">
+            {topThreeContributors.map((item, index) => (
+              <div key={item.userId} className="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2">
+                <p className="flex min-w-0 items-center gap-2 text-xs font-semibold text-slate-700">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-700">
+                    #{index + 1}
+                  </span>
+                  <span className="truncate">{item.name}</span>
+                  {index === 0 ? <Crown className="h-3.5 w-3.5 text-amber-500" /> : null}
+                </p>
+                <span className="text-xs font-bold text-emerald-700">{item.approvedCount}</span>
+              </div>
+            ))}
+          </div>
+
+          {myRank ? (
+            <p className="mt-2 rounded-lg bg-emerald-50 px-2.5 py-2 text-xs font-semibold text-emerald-700">
+              You are in position #{myRank} — keep it up! 🚀
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       {/* Hide-scrollbar utility (applied via className "scrollbar-none") */}
       <style>{`
