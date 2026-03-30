@@ -478,9 +478,7 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
         </div>
       )}
 
-      <div className="py-4 text-center text-sm font-medium text-slate-500">
-        Showing top 6 papers only.
-      </div>
+      
 
       {/* Floating Action - Back to Top */}
       <button
