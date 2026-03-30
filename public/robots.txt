@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Disallow: /control-room-ax7k9p2m
+Disallow: /profile

@@ -32,6 +32,91 @@ export default function App() {
     void syncCurrentUser({});
   }, [isAuthenticated, syncCurrentUser]);
 
+  useEffect(() => {
+    if (typeof document === "undefined" || typeof window === "undefined") return;
+
+    const setMetaTag = (key, content, attr = "name") => {
+      if (!content) return;
+      let tag = document.head.querySelector(`meta[${attr}="${key}"]`);
+      if (!tag) {
+        tag = document.createElement("meta");
+        tag.setAttribute(attr, key);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute("content", content);
+    };
+
+    const setCanonical = (href) => {
+      let link = document.head.querySelector("link[rel='canonical']");
+      if (!link) {
+        link = document.createElement("link");
+        link.setAttribute("rel", "canonical");
+        document.head.appendChild(link);
+      }
+      link.setAttribute("href", href);
+    };
+
+    const setJsonLd = (payload) => {
+      const id = "seo-jsonld";
+      const existing = document.getElementById(id);
+      if (existing) existing.remove();
+
+      if (!payload) return;
+      const script = document.createElement("script");
+      script.id = id;
+      script.type = "application/ld+json";
+      script.text = JSON.stringify(payload);
+      document.head.appendChild(script);
+    };
+
+    const origin = window.location.origin;
+    const pageUrl = `${origin}${location.pathname}${location.search}`;
+
+    let title = "MUST Past Papers | Midterm & Final Papers by Department";
+    let description =
+      "Find MUST past papers by department, subject, semester, and year. Upload papers, discover top contributors, and prepare faster.";
+    let robots = "index, follow";
+
+    if (normalizedPath === "/upload") {
+      title = "Upload Paper | MUST Past Papers";
+      description = "Upload your MUST past papers and help students prepare better across all departments.";
+    } else if (normalizedPath === "/profile") {
+      title = "Profile | MUST Past Papers";
+      description = "Manage your uploads, profile details, and activity on MUST Past Papers.";
+      robots = "noindex, follow";
+    } else if (isAdminRoute) {
+      title = "Admin Panel | MUST Past Papers";
+      description = "Internal moderation dashboard.";
+      robots = "noindex, nofollow";
+    }
+
+    document.title = title;
+    setMetaTag("description", description);
+    setMetaTag("robots", robots);
+    setMetaTag("og:title", title, "property");
+    setMetaTag("og:description", description, "property");
+    setMetaTag("og:type", "website", "property");
+    setMetaTag("og:url", pageUrl, "property");
+    setMetaTag("og:site_name", "MUST Past Papers", "property");
+    setMetaTag("twitter:card", "summary_large_image");
+    setMetaTag("twitter:title", title);
+    setMetaTag("twitter:description", description);
+    setCanonical(pageUrl);
+
+    if (!isAdminRoute) {
+      setJsonLd({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: "MUST Past Papers",
+        url: origin,
+        description:
+          "Academic archive for MUST past papers with filtering by department, subject, semester, and year.",
+      });
+    } else {
+      setJsonLd(null);
+    }
+  }, [isAdminRoute, location.pathname, location.search, normalizedPath]);
+
   return (
     <div className="app-shell min-h-screen text-slate-900">
       {!isAdminRoute ? <Navbar search={search} setSearch={setSearch} /> : null}
