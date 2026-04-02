@@ -69,35 +69,36 @@ export default function App() {
       link.setAttribute("href", href);
     };
 
-    const setJsonLd = (payload) => {
+    const setJsonLd = (payloads) => {
       const id = "seo-jsonld";
       const existing = document.getElementById(id);
       if (existing) existing.remove();
 
-      if (!payload) return;
+      if (!payloads || (Array.isArray(payloads) && payloads.length === 0)) return;
       const script = document.createElement("script");
       script.id = id;
       script.type = "application/ld+json";
-      script.text = JSON.stringify(payload);
+      script.text = JSON.stringify(Array.isArray(payloads) ? payloads : [payloads]);
       document.head.appendChild(script);
     };
 
-    const origin = window.location.origin;
-    const pageUrl = `${origin}${location.pathname}${location.search}`;
+    const SITE_ORIGIN = "https://www.mustpastpapers.app";
+    const canonicalPath = location.pathname.replace(/\/+$/, "") || "/";
+    const canonicalUrl = `${SITE_ORIGIN}${canonicalPath}`;
 
-    let title = "MUST Past Papers | Midterm & Final Papers by Department";
+    let title = "MUST Past Papers — Download Midterm & Final Exam Papers | mustpastpapers.app";
     let description =
-      "Find MUST past papers by department, subject, semester, and year. Upload papers, discover top contributors, and prepare faster.";
-    let robots = "index, follow";
+      "Download MUST (Mirpur University of Science & Technology) past papers free. Browse midterm, final & terminal exam papers by department, subject, semester and year. Upload and share past papers with fellow MUST students.";
+    let robots = "index, follow, max-image-preview:large, max-snippet:-1";
 
     if (normalizedPath === "/upload") {
-      title = "Upload Paper | MUST Past Papers";
-      description = "Upload your MUST past papers and help students prepare better across all departments.";
+      title = "Upload Past Paper — Share MUST Exam Papers | MUST Past Papers";
+      description = "Upload your MUST (Mirpur University) past papers — midterm, final, terminal or improve papers — and help students across all departments prepare better.";
     } else if (isPaperRoute) {
-      title = "Paper Post | MUST Past Papers";
-      description = "View paper details, comments, replies, and interactions for this post.";
+      title = "View Past Paper — MUST Exam Paper Details | MUST Past Papers";
+      description = "View MUST past paper details, download the exam paper, read comments and replies. Past papers from Mirpur University of Science & Technology.";
     } else if (normalizedPath === "/profile") {
-      title = "Profile | MUST Past Papers";
+      title = "Your Profile | MUST Past Papers";
       description = "Manage your uploads, profile details, and activity on MUST Past Papers.";
       robots = "noindex, follow";
     } else if (isAdminRoute) {
@@ -112,24 +113,85 @@ export default function App() {
     setMetaTag("og:title", title, "property");
     setMetaTag("og:description", description, "property");
     setMetaTag("og:type", "website", "property");
-    setMetaTag("og:url", pageUrl, "property");
+    setMetaTag("og:url", canonicalUrl, "property");
     setMetaTag("og:site_name", "MUST Past Papers", "property");
+    setMetaTag("og:image", `${SITE_ORIGIN}/must-logo.png`, "property");
+    setMetaTag("og:image:width", "1200", "property");
+    setMetaTag("og:image:height", "630", "property");
     setMetaTag("twitter:card", "summary_large_image");
     setMetaTag("twitter:title", title);
     setMetaTag("twitter:description", description);
-    setCanonical(pageUrl);
+    setMetaTag("twitter:image", `${SITE_ORIGIN}/must-logo.png`);
+    setCanonical(canonicalUrl);
 
-    if (!isAdminRoute) {
-      setJsonLd({
+    if (isAdminRoute) {
+      setJsonLd(null);
+    } else {
+      const schemas = [];
+
+      // WebSite with SearchAction (enables Google sitelinks search box)
+      schemas.push({
         "@context": "https://schema.org",
         "@type": "WebSite",
         name: "MUST Past Papers",
-        url: origin,
+        alternateName: ["mustpastpapers", "MUST Exam Papers", "Mirpur University Past Papers"],
+        url: SITE_ORIGIN,
         description:
-          "Academic archive for MUST past papers with filtering by department, subject, semester, and year.",
+          "Free academic archive for MUST (Mirpur University of Science & Technology) past papers — midterm, final & terminal exam papers organized by department, subject, semester and year.",
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${SITE_ORIGIN}/?search={search_term_string}`,
+          },
+          "query-input": "required name=search_term_string",
+        },
       });
-    } else {
-      setJsonLd(null);
+
+      // Organization
+      schemas.push({
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: "MUST Past Papers",
+        url: SITE_ORIGIN,
+        logo: `${SITE_ORIGIN}/must-logo.png`,
+        description: "Community-driven past paper archive for MUST (Mirpur University of Science & Technology) students.",
+        contactPoint: {
+          "@type": "ContactPoint",
+          email: "cruxdynamics@gmail.com",
+          contactType: "customer support",
+        },
+      });
+
+      // BreadcrumbList for paper detail pages
+      if (isPaperRoute) {
+        schemas.push({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Home",
+              item: SITE_ORIGIN,
+            },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: "Past Papers",
+              item: SITE_ORIGIN,
+            },
+            {
+              "@type": "ListItem",
+              position: 3,
+              name: "Paper Details",
+              item: canonicalUrl,
+            },
+          ],
+        });
+      }
+
+      setJsonLd(schemas);
     }
   }, [isAdminRoute, isPaperRoute, location.pathname, location.search, normalizedPath]);
 

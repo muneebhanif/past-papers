@@ -1,4 +1,12 @@
 User-agent: *
 Allow: /
+Allow: /paper/
+Allow: /upload
 Disallow: /control-room-ax7k9p2m
 Disallow: /profile
+
+# Crawl rate
+Crawl-delay: 1
+
+# Sitemaps
+Sitemap: https://www.mustpastpapers.app/sitemap.xml

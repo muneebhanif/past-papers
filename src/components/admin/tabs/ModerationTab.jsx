@@ -6,10 +6,10 @@ import { StatusBadge } from "../ui/StatusBadge";
 export function ModerationTab({ pending, actionLoading, reviewNoteByPaper, setReviewNoteByPaper, onModerate, setActivePaper, formatDate }) {
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Content Moderation</h2>
-          <p className="text-sm text-slate-500">Review and approve pending paper submissions</p>
+          <h2 className="text-lg font-bold text-slate-900 sm:text-xl">Content Moderation</h2>
+          <p className="text-xs text-slate-500 sm:text-sm">Review and approve pending paper submissions</p>
         </div>
         <Badge variant={pending.length > 0 ? "warning" : "success"}>{pending.length} pending review{pending.length !== 1 && "s"}</Badge>
       </div>
@@ -20,7 +20,7 @@ export function ModerationTab({ pending, actionLoading, reviewNoteByPaper, setRe
         <div className="space-y-4">
           {pending.map((paper) => (
             <div key={paper._id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 p-5">
+              <div className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-4 sm:p-5">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-bold text-slate-900">{paper.title}</h3>
@@ -33,7 +33,7 @@ export function ModerationTab({ pending, actionLoading, reviewNoteByPaper, setRe
                     <span className="flex items-center gap-1.5"><Calendar className="h-4 w-4" />{formatDate(paper._creationTime || paper.createdAt)}</span>
                   </div>
                 </div>
-                <button onClick={() => setActivePaper(paper)} className="inline-flex items-center gap-2 rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200">
+                <button onClick={() => setActivePaper(paper)} className="inline-flex items-center gap-2 self-start rounded-xl bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200">
                   <Eye className="h-4 w-4" />
                   Preview
                 </button>
@@ -50,7 +50,7 @@ export function ModerationTab({ pending, actionLoading, reviewNoteByPaper, setRe
                 ))}
               </div>
 
-              <div className="p-5">
+              <div className="p-4 sm:p-5">
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   Review Note <span className="text-slate-400">(required for rejection)</span>
                 </label>
@@ -61,7 +61,7 @@ export function ModerationTab({ pending, actionLoading, reviewNoteByPaper, setRe
                   className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm transition-all focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-50"
                   rows={2}
                 />
-                <div className="mt-4 flex flex-wrap gap-3">
+                <div className="mt-3 flex flex-col gap-2 sm:mt-4 sm:flex-row sm:flex-wrap sm:gap-3">
                   <button onClick={() => void onModerate(paper._id, "approved")} disabled={actionLoading} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md disabled:opacity-50">
                     <CheckCircle className="h-4 w-4" />
                     Approve Paper

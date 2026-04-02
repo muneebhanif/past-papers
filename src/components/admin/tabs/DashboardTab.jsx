@@ -67,7 +67,7 @@ export function DashboardTab({
       </div>
 
       {/* Stat Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
         <StatCard label="Total Papers" value={totalPapers} icon={FileText} color="blue" trend={stats?.growth?.last7?.papers} trendUp />
         <StatCard label="Pending Review" value={pending.length} icon={FileClock} color="amber" subtext="Awaiting moderation" />
         <StatCard label="Total Users" value={totalUsers} icon={Users} color="emerald" trend={stats?.growth?.last7?.users} trendUp />
@@ -76,7 +76,7 @@ export function DashboardTab({
       </div>
 
       {/* Charts Row */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Paper Status Donut */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <h3 className="mb-4 text-sm font-semibold text-slate-900">Paper Status Distribution</h3>
@@ -127,7 +127,7 @@ export function DashboardTab({
       </div>
 
       {/* Leaderboards & Pending Row */}
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Top Uploaders */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
@@ -235,7 +235,7 @@ export function DashboardTab({
       </div>
 
       {/* Department Distribution & Most Popular */}
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-3 sm:gap-4 md:grid-cols-2">
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <h3 className="mb-3 text-sm font-semibold text-slate-900">📊 Papers by Department</h3>
           <HorizontalBarChart
@@ -311,7 +311,7 @@ export function DashboardTab({
       </div>
 
       {/* Quick Stats Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <div className="group rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:shadow-md">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100">

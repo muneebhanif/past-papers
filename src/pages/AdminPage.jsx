@@ -513,7 +513,7 @@ export function AdminPage() {
     <div className="flex min-h-screen bg-slate-100">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-30 flex w-64 flex-col border-r border-slate-200 bg-white transition-all duration-300 lg:relative lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-30 flex w-[280px] flex-col border-r border-slate-200 bg-white transition-all duration-300 sm:w-64 lg:relative lg:translate-x-0 ${
           mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } ${sidebarOpen ? "lg:w-64" : "lg:w-[88px]"}`}
       >
@@ -614,9 +614,9 @@ export function AdminPage() {
       )}
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-x-hidden overflow-y-auto">
         {/* Top Bar */}
-        <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-slate-200 bg-white/80 px-4 backdrop-blur-lg md:px-6">
+        <header className="sticky top-0 z-10 flex h-14 items-center justify-between border-b border-slate-200 bg-white/80 px-3 backdrop-blur-lg sm:h-16 sm:px-4 md:px-6">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileSidebarOpen(true)}
@@ -634,15 +634,15 @@ export function AdminPage() {
             <h2 className="text-lg font-bold text-slate-900 capitalize">{activeTab}</h2>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             {/* Global Search */}
-            <div className="relative hidden md:block">
+            <div className="relative hidden sm:block">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search..."
-                className="w-64 rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm transition-all focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-50"
+                className="w-40 rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm transition-all focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-blue-50 md:w-64"
               />
             </div>
 
@@ -666,7 +666,7 @@ export function AdminPage() {
         </header>
 
         {/* Content Area */}
-        <div className="p-4 md:p-6">
+        <div className="p-3 sm:p-4 md:p-6">
           {activeTab === "dashboard" ? (
             <DashboardTab
               allPapers={allPapers}

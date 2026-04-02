@@ -51,7 +51,7 @@ export function UsersTab({
       </div>
 
       {/* User Stats */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100">
             <User className="h-4 w-4 text-blue-600" />
@@ -99,9 +99,9 @@ export function UsersTab({
         </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4">
         {/* User Form */}
-        <div className={`rounded-2xl border bg-white p-5 transition-all ${editingUserId ? "border-blue-300 ring-4 ring-blue-50" : "border-slate-200"}`}>
+        <div className={`rounded-2xl border bg-white p-4 transition-all sm:p-5 ${editingUserId ? "border-blue-300 ring-4 ring-blue-50" : "border-slate-200"}`}>
           <div className="mb-4 flex items-center gap-3">
             <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${editingUserId ? "bg-blue-100" : "bg-emerald-100"}`}>
               {editingUserId ? <Edit3 className="h-5 w-5 text-blue-600" /> : <UserPlus className="h-5 w-5 text-emerald-600" />}
@@ -152,7 +152,7 @@ export function UsersTab({
         </div>
 
         {/* User List */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 lg:col-span-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h3 className="font-semibold text-slate-900">All Users <span className="text-slate-400">({sorted.length})</span></h3>
             <div className="flex items-center gap-2">

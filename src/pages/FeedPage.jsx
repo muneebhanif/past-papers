@@ -188,7 +188,9 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
   // Scroll to highlighted paper
   useEffect(() => {
     if (!highlightedPaperId || !displayedPapers.length) return;
-    const target = document.querySelector(`[data-paper-id="${highlightedPaperId}"]`);
+    // Sanitize: Convex IDs are alphanumeric with some special chars. Reject anything suspicious.
+    if (!/^[a-zA-Z0-9_-]+$/.test(highlightedPaperId)) return;
+    const target = document.querySelector(`[data-paper-id="${CSS.escape(highlightedPaperId)}"]`);
     if (!target) return;
     setTimeout(() => {
       target.scrollIntoView({ behavior: "smooth", block: "center" });
