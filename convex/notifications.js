@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { requireUser } from "./lib";
+import { enforceRateLimit, requireUser } from "./lib";
 
 export const listForMe = query({
   args: { limit: v.optional(v.number()) },
@@ -46,6 +46,14 @@ export const markAllRead = mutation({
   args: {},
   handler: async (ctx) => {
     const user = await requireUser(ctx);
+
+    await enforceRateLimit(ctx, {
+      scope: "notifications_mark_all_read",
+      key: user._id,
+      windowMs: 60 * 1000,
+      maxRequests: 10,
+      errorMessage: "Too many notification updates. Please wait a minute and try again.",
+    });
 
     const unread = await ctx.db
       .query("notifications")

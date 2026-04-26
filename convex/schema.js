@@ -24,7 +24,20 @@ export default defineSchema({
     email: v.string(),
     expiresAt: v.number(),
     createdAt: v.number(),
-  }).index("by_token", ["token"]),
+  })
+    .index("by_token", ["token"])
+    .index("by_email_createdAt", ["email", "createdAt"]),
+
+  rateLimits: defineTable({
+    scope: v.string(),
+    key: v.string(),
+    windowStartedAt: v.number(),
+    count: v.number(),
+    updatedAt: v.number(),
+    blockedUntil: v.optional(v.number()),
+  })
+    .index("by_scope_key", ["scope", "key"])
+    .index("by_updatedAt", ["updatedAt"]),
 
   papers: defineTable({
     title: v.string(),

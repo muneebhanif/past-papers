@@ -1,21 +1,30 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { enforceRateLimit, getAdminEmails, normalizeEmail, normalizeOptionalHttpsUrl } from "./lib";
 
 const sessionDurationMs = 1000 * 60 * 60 * 12;
 
-const getAdminEmails = () =>
-  (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((email) => email.trim().toLowerCase())
-    .filter(Boolean);
+const validateSessionToken = (token) => {
+  const cleanToken = token.trim();
+  if (cleanToken.length < 32 || cleanToken.length > 200) {
+    throw new ConvexError("Invalid admin session.");
+  }
+  return cleanToken;
+};
 
 const requireValidSession = async (ctx, token) => {
+  const sessionToken = validateSessionToken(token);
   const session = await ctx.db
     .query("adminSessions")
-    .withIndex("by_token", (q) => q.eq("token", token))
+    .withIndex("by_token", (q) => q.eq("token", sessionToken))
     .first();
 
-  if (!session || session.expiresAt < Date.now()) {
+  if (!session) {
+    throw new ConvexError("Admin session expired. Please sign in again.");
+  }
+
+  if (session.expiresAt < Date.now()) {
+    await ctx.db.delete(session._id);
     throw new ConvexError("Admin session expired. Please sign in again.");
   }
 
@@ -70,7 +79,7 @@ export const login = mutation({
     password: v.string(),
   },
   handler: async (ctx, args) => {
-    const email = args.email.trim().toLowerCase();
+    const email = normalizeEmail(args.email, "Admin email");
     const password = args.password;
 
     const allowedEmails = getAdminEmails();
@@ -80,6 +89,15 @@ export const login = mutation({
       throw new ConvexError("Admin panel password is not configured.");
     }
 
+    await enforceRateLimit(ctx, {
+      scope: "admin_login",
+      key: email,
+      windowMs: 10 * 60 * 1000,
+      maxRequests: 5,
+      blockDurationMs: 15 * 60 * 1000,
+      errorMessage: "Too many admin login attempts. Please wait 15 minutes and try again.",
+    });
+
     if (!allowedEmails.includes(email) || password !== adminPanelPassword) {
       throw new ConvexError("Invalid admin credentials.");
     }
@@ -87,13 +105,13 @@ export const login = mutation({
     const token = `${crypto.randomUUID()}_${crypto.randomUUID()}`;
     const now = Date.now();
 
-    const existing = await ctx.db
+    const existingSessions = await ctx.db
       .query("adminSessions")
-      .withIndex("by_token", (q) => q.eq("token", token))
-      .first();
+      .withIndex("by_email_createdAt", (q) => q.eq("email", email))
+      .take(20);
 
-    if (existing) {
-      await ctx.db.delete(existing._id);
+    for (const existingSession of existingSessions) {
+      await ctx.db.delete(existingSession._id);
     }
 
     await ctx.db.insert("adminSessions", {
@@ -125,9 +143,10 @@ export const me = query({
 export const logout = mutation({
   args: { token: v.string() },
   handler: async (ctx, args) => {
+    const sessionToken = validateSessionToken(args.token);
     const session = await ctx.db
       .query("adminSessions")
-      .withIndex("by_token", (q) => q.eq("token", args.token))
+      .withIndex("by_token", (q) => q.eq("token", sessionToken))
       .first();
 
     if (session) {
@@ -272,15 +291,8 @@ export const createUser = mutation({
 
     await ensureUniqueUsername(ctx, username);
 
-    const email = args.email?.trim().toLowerCase();
-    if (email && !email.includes("@")) {
-      throw new ConvexError("Invalid email.");
-    }
-
-    const image = args.image?.trim();
-    if (image && !/^https?:\/\//i.test(image)) {
-      throw new ConvexError("Image URL must start with http or https.");
-    }
+    const email = args.email ? normalizeEmail(args.email) : undefined;
+    const image = normalizeOptionalHttpsUrl(args.image, "Image URL");
 
     const userId = await ctx.db.insert("users", {
       username,
@@ -319,15 +331,8 @@ export const updateUser = mutation({
 
     await ensureUniqueUsername(ctx, username, args.userId);
 
-    const email = args.email?.trim().toLowerCase();
-    if (email && !email.includes("@")) {
-      throw new ConvexError("Invalid email.");
-    }
-
-    const image = args.image?.trim();
-    if (image && !/^https?:\/\//i.test(image)) {
-      throw new ConvexError("Image URL must start with http or https.");
-    }
+    const email = args.email ? normalizeEmail(args.email) : undefined;
+    const image = normalizeOptionalHttpsUrl(args.image, "Image URL");
 
     await ctx.db.patch(args.userId, {
       username,

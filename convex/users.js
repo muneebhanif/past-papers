@@ -1,7 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { ensureAdminFlag } from "./lib";
+import { enforceRateLimit, ensureAdminFlag, requireUser } from "./lib";
 
 const sanitizeUsername = (value) =>
   value
@@ -61,14 +61,19 @@ export const updateProfile = mutation({
     username: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) {
-      throw new Error("Authentication required.");
-    }
+    const user = await requireUser(ctx);
+
+    await enforceRateLimit(ctx, {
+      scope: "profile_update",
+      key: user._id,
+      windowMs: 15 * 60 * 1000,
+      maxRequests: 5,
+      errorMessage: "Too many profile updates. Please wait 15 minutes and try again.",
+    });
 
     const username = sanitizeUsername(args.username);
     if (username.length < 3) {
-      throw new Error("Username must be at least 3 characters (letters, numbers, underscore).");
+      throw new ConvexError("Username must be at least 3 characters (letters, numbers, underscore).");
     }
 
     const existing = await ctx.db
@@ -76,15 +81,15 @@ export const updateProfile = mutation({
       .withIndex("username", (q) => q.eq("username", username))
       .first();
 
-    if (existing && existing._id !== userId) {
-      throw new Error("Username is already taken.");
+    if (existing && existing._id !== user._id) {
+      throw new ConvexError("Username is already taken.");
     }
 
-    await ctx.db.patch(userId, {
+    await ctx.db.patch(user._id, {
       username,
     });
 
-    const updated = await ctx.db.get(userId);
+    const updated = await ctx.db.get(user._id);
     return updated;
   },
 });

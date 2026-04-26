@@ -2,7 +2,7 @@ import { paginationOptsValidator } from "convex/server";
 import { ConvexError, v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { mutation, query } from "./_generated/server";
-import { requireAdmin, requireUser } from "./lib";
+import { enforceRateLimit, requireAdmin, requireUser } from "./lib";
 
 const normalize = (value) => value.trim().toLowerCase();
 const sanitizeText = (value, max = 100) => value.trim().replace(/\s+/g, " ").slice(0, max);
@@ -483,6 +483,15 @@ export const toggleLike = mutation({
   },
   handler: async (ctx, args) => {
     const user = await requireUser(ctx);
+
+    await enforceRateLimit(ctx, {
+      scope: "paper_like_toggle",
+      key: user._id,
+      windowMs: 60 * 1000,
+      maxRequests: 40,
+      errorMessage: "You're liking too fast. Please wait a minute and try again.",
+    });
+
     const paper = await ctx.db.get(args.paperId);
     if (!paper) {
       throw new ConvexError("Paper not found.");

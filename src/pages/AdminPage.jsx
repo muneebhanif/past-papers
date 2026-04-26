@@ -87,7 +87,12 @@ export function AdminPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [token, setToken] = useState(() => localStorage.getItem("admin_panel_token") || "");
+  const [token, setToken] = useState(() => {
+    if (typeof window === "undefined") {
+      return "";
+    }
+    return sessionStorage.getItem("admin_panel_token") || localStorage.getItem("admin_panel_token") || "";
+  });
   const [activeTab, setActiveTab] = useState("dashboard");
   const [activePaper, setActivePaper] = useState(null);
   const [reviewNoteByPaper, setReviewNoteByPaper] = useState({});
@@ -160,7 +165,16 @@ export function AdminPage() {
 
   // --- Effects ---
   useEffect(() => {
+    const legacyToken = localStorage.getItem("admin_panel_token");
+    if (legacyToken && !sessionStorage.getItem("admin_panel_token")) {
+      sessionStorage.setItem("admin_panel_token", legacyToken);
+    }
+    localStorage.removeItem("admin_panel_token");
+  }, []);
+
+  useEffect(() => {
     if (me?.ok === false) {
+      sessionStorage.removeItem("admin_panel_token");
       localStorage.removeItem("admin_panel_token");
       setToken("");
     }
@@ -183,7 +197,8 @@ export function AdminPage() {
     setLoading(true);
     try {
       const session = await login({ email, password });
-      localStorage.setItem("admin_panel_token", session.token);
+      sessionStorage.setItem("admin_panel_token", session.token);
+      localStorage.removeItem("admin_panel_token");
       setToken(session.token);
       setPassword("");
       addToast("Welcome back, Admin!", "success");
@@ -198,6 +213,7 @@ export function AdminPage() {
     if (token) {
       await logout({ token });
     }
+    sessionStorage.removeItem("admin_panel_token");
     localStorage.removeItem("admin_panel_token");
     setToken("");
     addToast("Signed out successfully", "info");
