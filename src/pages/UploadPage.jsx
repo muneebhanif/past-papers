@@ -246,7 +246,6 @@ export function UploadPage({ onRequireAuth }) {
     <div className="grid gap-6 pb-16 lg:grid-cols-12 xl:pb-0">
       <section className="rounded-2xl bg-white p-6 shadow-sm lg:col-span-8">
         <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">Contribute to the Archive</h2>
-        <p className="mt-2 text-sm text-slate-500">Upload front page and optional back page (JPEG). Images are auto-compressed to ~300 KB each before upload.</p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
