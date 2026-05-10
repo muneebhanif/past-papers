@@ -1,6 +1,7 @@
-import { useConvexAuth, usePaginatedQuery, useQuery } from "convex/react";
+import { useConvexAuth, useQuery } from "convex/react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useHybridFeed } from "../hooks/useHybridFeed";
 import { api } from "../lib/api";
 import { LoginSplash } from "../components/feed/LoginSplash";
 import { PaperCard } from "../components/feed/PaperCard";
@@ -165,13 +166,14 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
 
   const config = getConfig(department);
 
-  const { results, status } = usePaginatedQuery(
-    api.papers.listApproved,
-    { department, search, paperType, semester },
-    { initialNumItems: 6 },
-  );
+  const { results, status, loadMore, isHybridMode, httpLoading } = useHybridFeed({
+    department,
+    search,
+    paperType,
+    semester,
+  });
 
-  const displayedPapers = results.slice(0, 6);
+  const displayedPapers = results;
   const topThreeContributors = (rightRailData?.topContributors ?? []).slice(0, 3);
   const myRankIndex = topThreeContributors.findIndex((item) => item.userId === me?._id);
   const myRank = myRankIndex >= 0 ? myRankIndex + 1 : null;
@@ -505,12 +507,18 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
       {/*  RESULTS COUNT                                               */}
       {/* ============================================================ */}
       {displayedPapers.length > 0 && (
-        <div className="px-1">
+        <div className="flex items-center justify-between px-1">
           <p className="text-xs text-slate-500 sm:text-sm">
             Showing{" "}
             <span className="font-semibold text-slate-700">{displayedPapers.length}</span> papers
             {hasActiveFilters && " with filters"}
           </p>
+          {isHybridMode && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+              Offline mode
+            </span>
+          )}
         </div>
       )}
 
@@ -534,6 +542,27 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
               isFocused={highlightedPaperId === paper._id}
             />
           ))}
+        </div>
+      )}
+
+      {/* ============================================================ */}
+      {/*  LOAD MORE                                                    */}
+      {/* ============================================================ */}
+      {status === "CanLoadMore" && (
+        <div className="flex justify-center pb-2">
+          <button
+            onClick={() => loadMore(10)}
+            disabled={httpLoading}
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-6 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-all active:scale-95 disabled:opacity-60"
+          >
+            {httpLoading ? (
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+              </svg>
+            ) : null}
+            {httpLoading ? "Loading…" : "Load more papers"}
+          </button>
         </div>
       )}
 

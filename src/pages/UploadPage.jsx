@@ -1,11 +1,12 @@
 import { useAction, useConvexAuth, useMutation } from "convex/react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { DEPARTMENTS } from "../constants/departments";
 import { ACADEMIC_YEARS, PAPER_TYPES, SEMESTERS } from "../constants/academicOptions";
 import { api } from "../lib/api";
 
 const sanitizeText = (value, max = 120) => value.trim().replace(/\s+/g, " ").slice(0, max);
-const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 300 * 1024;
 const MAX_SOURCE_BYTES = 20 * 1024 * 1024;
 
 const fileToImage = (file) =>
@@ -106,8 +107,6 @@ export function UploadPage({ onRequireAuth }) {
   const [frontPreview, setFrontPreview] = useState("");
   const [backPreview, setBackPreview] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     if (!frontFile) {
@@ -133,9 +132,6 @@ export function UploadPage({ onRequireAuth }) {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-
     if (!isAuthenticated) {
       onRequireAuth();
       return;
@@ -151,12 +147,12 @@ export function UploadPage({ onRequireAuth }) {
       department: sanitizeText(form.department, 80),
     };
 
-    if (clean.title.length < 4) return setError("Title must be at least 4 characters.");
-    if (clean.subject.length < 2) return setError("Subject must be at least 2 characters.");
-    if (clean.teacher.length < 2) return setError("Teacher must be at least 2 characters.");
-    if (!PAPER_TYPES.includes(clean.type)) return setError("Invalid paper type selected.");
-    if (!ACADEMIC_YEARS.includes(clean.year)) return setError("Invalid year selected.");
-    if (!SEMESTERS.includes(clean.semester)) return setError("Invalid semester selected.");
+    if (clean.title.length < 4) { toast.error("Title must be at least 4 characters."); return; }
+    if (clean.subject.length < 2) { toast.error("Subject must be at least 2 characters."); return; }
+    if (clean.teacher.length < 2) { toast.error("Teacher must be at least 2 characters."); return; }
+    if (!PAPER_TYPES.includes(clean.type)) { toast.error("Invalid paper type selected."); return; }
+    if (!ACADEMIC_YEARS.includes(clean.year)) { toast.error("Invalid year selected."); return; }
+    if (!SEMESTERS.includes(clean.semester)) { toast.error("Invalid semester selected."); return; }
 
     const validateJpeg = (selectedFile, label, required = false) => {
       if (!selectedFile) {
@@ -208,7 +204,8 @@ export function UploadPage({ onRequireAuth }) {
       validateJpeg(frontFile, "Front image", true);
       validateJpeg(backFile, "Back image", false);
     } catch (validationError) {
-      return setError(validationError.message || "Invalid image selected.");
+      toast.error(validationError.message || "Invalid image selected.");
+      return;
     }
 
     try {
@@ -226,7 +223,7 @@ export function UploadPage({ onRequireAuth }) {
         ...(backUpload?.url ? { secondImageUrl: backUpload.url } : {}),
         ...(backUpload?.fileId ? { secondImageFileId: backUpload.fileId } : {}),
       });
-      setSuccess("Upload submitted for admin approval.");
+      toast.success("Upload submitted for admin approval!");
       setForm({
         title: "",
         subject: "",
@@ -239,7 +236,7 @@ export function UploadPage({ onRequireAuth }) {
       setFrontFile(null);
       setBackFile(null);
     } catch (uploadError) {
-      setError(uploadError.message || "Upload failed.");
+      toast.error(uploadError.message || "Upload failed.");
     } finally {
       setIsSubmitting(false);
     }
@@ -249,7 +246,7 @@ export function UploadPage({ onRequireAuth }) {
     <div className="grid gap-6 pb-16 lg:grid-cols-12 xl:pb-0">
       <section className="rounded-2xl bg-white p-6 shadow-sm lg:col-span-8">
         <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">Contribute to the Archive</h2>
-        <p className="mt-2 text-sm text-slate-500">Upload front page and optional back page (JPEG). Files are auto-compressed to max 3MB each before upload.</p>
+        <p className="mt-2 text-sm text-slate-500">Upload front page and optional back page (JPEG). Images are auto-compressed to ~300 KB each before upload.</p>
 
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
@@ -382,9 +379,6 @@ export function UploadPage({ onRequireAuth }) {
             </div>
           </div>
 
-          {error ? <p className="text-sm font-semibold text-red-600">{error}</p> : null}
-          {success ? <p className="text-sm font-semibold text-emerald-700">{success}</p> : null}
-
           <button
             type="submit"
             disabled={isSubmitting}
@@ -401,7 +395,7 @@ export function UploadPage({ onRequireAuth }) {
           <ul className="space-y-2 text-sm text-slate-600">
             <li>• Front image is required, back image is optional.</li>
             <li>• Only image/jpeg is accepted.</li>
-            <li>• Images are auto-compressed to 3MB max per image.</li>
+            <li>• Images are auto-compressed to ~300 KB each before upload.</li>
             <li>• Add correct subject/teacher/year metadata.</li>
             <li>• Admin review is required before publishing.</li>
           </ul>

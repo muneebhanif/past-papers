@@ -2,7 +2,7 @@ import { useAction, useMutation, useQuery } from "convex/react";
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { ImageViewerModal } from "../components/common/ImageViewerModal";
-import { Toast } from "../components/admin/ui/Toast";
+import { toast } from "sonner";
 import { ConfirmModal } from "../components/admin/ui/ConfirmModal";
 import { DashboardTab } from "../components/admin/tabs/DashboardTab";
 import { ModerationTab } from "../components/admin/tabs/ModerationTab";
@@ -98,8 +98,6 @@ export function AdminPage() {
   const [reviewNoteByPaper, setReviewNoteByPaper] = useState({});
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [toasts, setToasts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [confirmModal, setConfirmModal] = useState({ open: false, title: "", message: "", onConfirm: null, danger: false });
   const [actionLoading, setActionLoading] = useState(false);
@@ -180,16 +178,6 @@ export function AdminPage() {
     }
   }, [me]);
 
-  // --- Toast Helpers ---
-  const addToast = (message, type = "info") => {
-    const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
-  };
-
-  const removeToast = (id) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  };
-
   // --- Handlers ---
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -201,7 +189,7 @@ export function AdminPage() {
       localStorage.removeItem("admin_panel_token");
       setToken(session.token);
       setPassword("");
-      addToast("Welcome back, Admin!", "success");
+      toast.success("Welcome back, Admin!");
     } catch (err) {
       setError(err?.message || "Invalid credentials.");
     } finally {
@@ -216,7 +204,7 @@ export function AdminPage() {
     sessionStorage.removeItem("admin_panel_token");
     localStorage.removeItem("admin_panel_token");
     setToken("");
-    addToast("Signed out successfully", "info");
+    toast.info("Signed out successfully");
   };
 
   const onModerate = async (paperId, status) => {
@@ -224,7 +212,7 @@ export function AdminPage() {
     setError("");
 
     if (status === "rejected" && !note) {
-      addToast("Please add a rejection note before rejecting.", "warning");
+      toast.warning("Please add a rejection note before rejecting.");
       return;
     }
 
@@ -232,14 +220,14 @@ export function AdminPage() {
       setActionLoading(true);
       if (status === "rejected") {
         await rejectPaperAndCleanup({ token, paperId, reviewNote: note });
-        addToast("Paper rejected and cleaned up", "success");
+        toast.success("Paper rejected and cleaned up");
       } else {
         await setStatus({ token, paperId, status, reviewNote: undefined });
-        addToast("Paper approved successfully", "success");
+        toast.success("Paper approved successfully");
       }
       setReviewNoteByPaper(prev => ({ ...prev, [paperId]: "" }));
     } catch (err) {
-      addToast(err?.message || "Failed to update paper status.", "error");
+      toast.error(err?.message || "Failed to update paper status.");
     } finally {
       setActionLoading(false);
     }
@@ -252,15 +240,15 @@ export function AdminPage() {
       setActionLoading(true);
       if (editingUserId) {
         await updateUser({ token, userId: editingUserId, ...userForm });
-        addToast("User updated successfully", "success");
+        toast.success("User updated successfully");
       } else {
         await createUser({ token, ...userForm });
-        addToast("User created successfully", "success");
+        toast.success("User created successfully");
       }
       setEditingUserId("");
       setUserForm({ username: "", name: "", email: "", image: "" });
     } catch (err) {
-      addToast(err?.message || "Failed to save user.", "error");
+      toast.error(err?.message || "Failed to save user.");
     } finally {
       setActionLoading(false);
     }
@@ -290,9 +278,9 @@ export function AdminPage() {
             setEditingUserId("");
             setUserForm({ username: "", name: "", email: "", image: "" });
           }
-          addToast("User deleted successfully", "success");
+          toast.success("User deleted successfully");
         } catch (err) {
-          addToast(err?.message || "Failed to delete user.", "error");
+          toast.error(err?.message || "Failed to delete user.");
         } finally {
           setActionLoading(false);
           setConfirmModal({ open: false });
@@ -308,12 +296,12 @@ export function AdminPage() {
       setActionLoading(true);
       if (editingPaperId) {
         await updatePaper({ token, paperId: editingPaperId, ...paperForm });
-        addToast("Paper updated successfully", "success");
+        toast.success("Paper updated successfully");
         setEditingPaperId("");
         setPaperForm({ title: "", department: "", subject: "", teacher: "", year: "", type: "" });
       }
     } catch (err) {
-      addToast(err?.message || "Failed to update paper.", "error");
+      toast.error(err?.message || "Failed to update paper.");
     } finally {
       setActionLoading(false);
     }
@@ -345,9 +333,9 @@ export function AdminPage() {
             setEditingPaperId("");
             setPaperForm({ title: "", department: "", subject: "", teacher: "", year: "", type: "" });
           }
-          addToast("Paper deleted successfully", "success");
+          toast.success("Paper deleted successfully");
         } catch (err) {
-          addToast(err?.message || "Failed to delete paper.", "error");
+          toast.error(err?.message || "Failed to delete paper.");
         } finally {
           setActionLoading(false);
           setConfirmModal({ open: false });
@@ -367,9 +355,9 @@ export function AdminPage() {
         try {
           setActionLoading(true);
           await deleteActivity({ token, activityId });
-          addToast("Activity deleted", "success");
-        } catch (err) {
-          addToast("Failed to delete activity", "error");
+          toast.success("Activity deleted");
+        } catch {
+          toast.error("Failed to delete activity");
         } finally {
           setActionLoading(false);
           setConfirmModal({ open: false });
@@ -387,7 +375,7 @@ export function AdminPage() {
       localStorage.setItem("admin_settings_email_notifications", String(settingsForm.emailNotifications));
       localStorage.setItem("admin_settings_strict_moderation", String(settingsForm.strictModeration));
       localStorage.setItem("admin_settings_maintenance_mode", String(settingsForm.maintenanceMode));
-      addToast("Settings saved successfully", "success");
+      toast.success("Settings saved successfully");
     } finally {
       setActionLoading(false);
     }
@@ -736,7 +724,6 @@ export function AdminPage() {
           {activeTab === "comments" ? (
             <CommentsTab
               token={token}
-              addToast={addToast}
               setConfirmModal={setConfirmModal}
               actionLoading={actionLoading}
               setActionLoading={setActionLoading}
@@ -746,7 +733,6 @@ export function AdminPage() {
           {activeTab === "likes" ? (
             <LikesTab
               token={token}
-              addToast={addToast}
               setConfirmModal={setConfirmModal}
               actionLoading={actionLoading}
               setActionLoading={setActionLoading}
@@ -793,18 +779,6 @@ export function AdminPage() {
           ) : null}
         </div>
       </main>
-
-      {/* Toast Container */}
-      <div className="fixed bottom-4 right-4 z-50 space-y-2">
-        {toasts.map((toast) => (
-          <Toast
-            key={toast.id}
-            message={toast.message}
-            type={toast.type}
-            onClose={() => removeToast(toast.id)}
-          />
-        ))}
-      </div>
 
       {/* Confirmation Modal */}
       <ConfirmModal

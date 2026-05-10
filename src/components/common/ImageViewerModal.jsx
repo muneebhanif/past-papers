@@ -1,15 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { toast } from "sonner";
 
 export function ImageViewerModal({ open, onClose, images, title }) {
   const visibleImages = useMemo(() => (images ?? []).filter(Boolean), [images]);
   const [menuIndex, setMenuIndex] = useState(-1);
-  const [downloadError, setDownloadError] = useState("");
   const [downloadingIndex, setDownloadingIndex] = useState(-1);
 
   const onDownload = async (imageUrl, index) => {
     try {
-      setDownloadError("");
       setDownloadingIndex(index);
       const response = await fetch(imageUrl);
       if (!response.ok) {
@@ -31,7 +30,7 @@ export function ImageViewerModal({ open, onClose, images, title }) {
       URL.revokeObjectURL(objectUrl);
       setMenuIndex(-1);
     } catch {
-      setDownloadError("Download failed. Please try again.");
+      toast.error("Download failed. Please try again.");
     } finally {
       setDownloadingIndex(-1);
     }
@@ -54,7 +53,6 @@ export function ImageViewerModal({ open, onClose, images, title }) {
       window.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
       setMenuIndex(-1);
-      setDownloadError("");
       setDownloadingIndex(-1);
     };
   }, [open, onClose]);
@@ -80,11 +78,7 @@ export function ImageViewerModal({ open, onClose, images, title }) {
         onClick={(event) => event.stopPropagation()}
       >
         <div className="pointer-events-none absolute left-0 right-0 top-0 z-30 flex items-start justify-between p-2 sm:p-4">
-          {downloadError ? (
-            <p className="pointer-events-auto rounded-md bg-red-600/90 px-2.5 py-1 text-xs font-semibold text-white">
-              {downloadError}
-            </p>
-          ) : <span />}
+          <span />
 
           <button
             type="button"

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../lib/api";
+import { toast } from "sonner";
 import {
   Edit3, Eye, MessageSquare, CornerDownRight, Save, Search,
   Trash2, User, FileText, X, Filter, AlertCircle
@@ -8,7 +9,7 @@ import {
 import { EmptyState } from "../ui/EmptyState";
 import { StatusBadge } from "../ui/StatusBadge";
 
-export function CommentsTab({ token, addToast, setConfirmModal, actionLoading, setActionLoading }) {
+export function CommentsTab({ token, setConfirmModal, actionLoading, setActionLoading }) {
   const comments = useQuery(api.adminPanel.listAllComments, token ? { token } : "skip") ?? [];
   const updateComment = useMutation(api.adminPanel.adminUpdateComment);
   const deleteComment = useMutation(api.adminPanel.adminDeleteComment);
@@ -40,11 +41,11 @@ export function CommentsTab({ token, addToast, setConfirmModal, actionLoading, s
     try {
       setActionLoading(true);
       await updateComment({ token, commentId: editingId, content: editContent });
-      addToast("Comment updated successfully", "success");
+      toast.success("Comment updated successfully");
       setEditingId(null);
       setEditContent("");
     } catch (err) {
-      addToast(err?.message || "Failed to update comment", "error");
+      toast.error(err?.message || "Failed to update comment");
     } finally {
       setActionLoading(false);
     }
@@ -60,9 +61,9 @@ export function CommentsTab({ token, addToast, setConfirmModal, actionLoading, s
         try {
           setActionLoading(true);
           await deleteComment({ token, commentId: comment._id });
-          addToast("Comment deleted successfully", "success");
+          toast.success("Comment deleted successfully");
         } catch (err) {
-          addToast(err?.message || "Failed to delete comment", "error");
+          toast.error(err?.message || "Failed to delete comment");
         } finally {
           setActionLoading(false);
           setConfirmModal({ open: false });

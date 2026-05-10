@@ -1,5 +1,6 @@
-import { useConvexAuth, useConvexConnectionState, useMutation } from "convex/react";
+import { useConvexAuth, useMutation } from "convex/react";
 import { useEffect, useState } from "react";
+import { Toaster } from "sonner";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Navbar } from "./components/layout/Navbar";
 import { Sidebar } from "./components/layout/Sidebar";
@@ -17,14 +18,12 @@ import { ADMIN_PANEL_PATH } from "./lib/adminPath";
 
 export default function App() {
   const { isAuthenticated } = useConvexAuth();
-  const connectionState = useConvexConnectionState();
   const syncCurrentUser = useMutation(api.users.syncCurrentUser);
   const location = useLocation();
 
   const [department, setDepartment] = useState(DEPARTMENTS[0]);
   const [search, setSearch] = useState("");
   const [isAuthPromptOpen, setAuthPromptOpen] = useState(false);
-  const [disconnectMessage, setDisconnectMessage] = useState("");
 
   const normalizedPath = (location.pathname || "/").replace(/\/+$/, "") || "/";
   const isAdminRoute = normalizedPath === `/${ADMIN_PANEL_PATH}`;
@@ -35,15 +34,6 @@ export default function App() {
     if (!isAuthenticated) return;
     void syncCurrentUser({});
   }, [isAuthenticated, syncCurrentUser]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const handler = (event) => {
-      setDisconnectMessage(event.detail || "");
-    };
-    window.addEventListener("convex-disconnect-error", handler);
-    return () => window.removeEventListener("convex-disconnect-error", handler);
-  }, []);
 
   useEffect(() => {
     if (typeof document === "undefined" || typeof window === "undefined") return;
@@ -197,27 +187,13 @@ export default function App() {
 
   return (
     <div className="app-shell min-h-screen text-slate-900">
+      <Toaster
+        position="top-center"
+        richColors
+        closeButton
+        toastOptions={{ style: { fontFamily: "inherit" } }}
+      />
       {!isAdminRoute ? <Navbar /> : null}
-
-      {!connectionState.isWebSocketConnected ? (
-        <div className="mx-auto w-full max-w-[1300px] px-3 pt-3 md:px-4">
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            {typeof navigator !== "undefined" && !navigator.onLine ? (
-              <span>
-                You&apos;re offline. Please check your internet connection. We&apos;ll reconnect automatically.
-              </span>
-            ) : /rate|429|too many|quota/i.test(disconnectMessage) ? (
-              <span>
-                Connection rate limited due to too many refreshes. Please wait a few seconds and we&apos;ll reconnect automatically.
-              </span>
-            ) : (
-              <span>
-                Connection lost. We&apos;re retrying automatically. If this keeps happening, please wait a few seconds and avoid rapid refreshes.
-              </span>
-            )}
-          </div>
-        </div>
-      ) : null}
 
       <main
         className={

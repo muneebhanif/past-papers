@@ -1,5 +1,6 @@
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useState, useRef, useEffect } from "react";
+import { toast } from "sonner";
 import { api } from "../../lib/api";
 import { cartoonAvatar } from "../../lib/avatar";
 import { ImageViewerModal } from "../common/ImageViewerModal";
@@ -37,12 +38,10 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
   const [isViewerOpen, setViewerOpen] = useState(false);
   const [viewerImages, setViewerImages] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [downloadError, setDownloadError] = useState("");
   const [showAllComments, setShowAllComments] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState("");
   const [editingCommentValue, setEditingCommentValue] = useState("");
   const [commentActionBusy, setCommentActionBusy] = useState(false);
-  const [commentActionError, setCommentActionError] = useState("");
   const [replyToId, setReplyToId] = useState("");
   const [replyValue, setReplyValue] = useState("");
   const [isLikeAnimating, setIsLikeAnimating] = useState(false);
@@ -81,7 +80,6 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
 
   const onDownload = async () => {
     try {
-      setDownloadError("");
       setIsDownloading(true);
       const response = await fetch(safePreviewUrl);
       if (!response.ok) throw new Error("Failed to download file");
@@ -103,7 +101,7 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
       URL.revokeObjectURL(objectUrl);
       setMenuOpen(false);
     } catch {
-      setDownloadError("Download failed. Please try again.");
+      toast.error("Download failed. Please try again.");
     } finally {
       setIsDownloading(false);
     }
@@ -150,32 +148,30 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
       setReplyValue("");
       setReplyToId("");
     } catch (err) {
-      setCommentActionError(err?.message || "Could not post reply.");
+      toast.error(err?.message || "Could not post reply.");
     } finally {
       setCommentActionBusy(false);
     }
   };
 
   const onStartEditComment = (item) => {
-    setCommentActionError("");
     setEditingCommentId(item._id);
     setEditingCommentValue(item.content);
   };
 
   const onSaveEditedComment = async (commentId) => {
     if (!editingCommentValue.trim()) {
-      setCommentActionError("Comment cannot be empty.");
+      toast.error("Comment cannot be empty.");
       return;
     }
 
     try {
       setCommentActionBusy(true);
-      setCommentActionError("");
       await updateComment({ commentId, content: editingCommentValue });
       setEditingCommentId("");
       setEditingCommentValue("");
     } catch (err) {
-      setCommentActionError(err?.message || "Could not update comment.");
+      toast.error(err?.message || "Could not update comment.");
     } finally {
       setCommentActionBusy(false);
     }
@@ -186,14 +182,13 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
 
     try {
       setCommentActionBusy(true);
-      setCommentActionError("");
       await deleteComment({ commentId });
       if (editingCommentId === commentId) {
         setEditingCommentId("");
         setEditingCommentValue("");
       }
     } catch (err) {
-      setCommentActionError(err?.message || "Could not delete comment.");
+      toast.error(err?.message || "Could not delete comment.");
     } finally {
       setCommentActionBusy(false);
     }
@@ -573,14 +568,6 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
           </button>
         </div>
 
-        {/* Download Error */}
-        {downloadError && (
-          <div className="mt-3 flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600">
-            <XCircle className="h-4 w-4 flex-shrink-0" />
-            {downloadError}
-          </div>
-        )}
-
         {/* Comment Form */}
         <form onSubmit={onSubmitComment} className="mt-4">
           <div className="flex gap-3">
@@ -611,14 +598,6 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
             </div>
           </div>
         </form>
-
-        {/* Comment Error */}
-        {commentActionError && (
-          <div className="mt-3 flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600">
-            <XCircle className="h-4 w-4 flex-shrink-0" />
-            {commentActionError}
-          </div>
-        )}
 
         {/* Comments List */}
         {rootComments.length > 0 && (

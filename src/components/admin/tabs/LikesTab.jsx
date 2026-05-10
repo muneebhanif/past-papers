@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../lib/api";
+import { toast } from "sonner";
 import { Heart, Search, Trash2, User, FileText, TrendingUp } from "lucide-react";
 import { EmptyState } from "../ui/EmptyState";
 import { StatusBadge } from "../ui/StatusBadge";
 
-export function LikesTab({ token, addToast, setConfirmModal, actionLoading, setActionLoading }) {
+export function LikesTab({ token, setConfirmModal, setActionLoading }) {
   const likes = useQuery(api.adminPanel.listAllLikes, token ? { token } : "skip") ?? [];
   const deleteLike = useMutation(api.adminPanel.adminDeleteLike);
 
@@ -37,9 +38,9 @@ export function LikesTab({ token, addToast, setConfirmModal, actionLoading, setA
         try {
           setActionLoading(true);
           await deleteLike({ token, likeId: like._id });
-          addToast("Like removed successfully", "success");
+          toast.success("Like removed successfully");
         } catch (err) {
-          addToast(err?.message || "Failed to remove like", "error");
+          toast.error(err?.message || "Failed to remove like");
         } finally {
           setActionLoading(false);
           setConfirmModal({ open: false });
