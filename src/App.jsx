@@ -247,7 +247,7 @@ export default function App() {
             © {new Date().getFullYear()} DESIGNED AND DEVELOPED BY CRUX DYNAMICS
           </p>
           <p className="mt-2 text-xs font-semibold text-slate-600 md:text-sm">
-            Contact us: <a href="https://wa.me/923479943556" target="_blank" rel="noreferrer" className="underline underline-offset-2">WhatsApp 0347-9943556</a> · <a href="mailto:cruxdynamics@gmail.com" className="underline underline-offset-2">cruxdynamics@gmail.com</a>
+            For any issue regarding the website: <a href="https://wa.me/923479943556" target="_blank" rel="noreferrer" className="underline underline-offset-2">WhatsApp 0347-9943556</a> · <a href="mailto:cruxdynamics@gmail.com" className="underline underline-offset-2">cruxdynamics@gmail.com</a>
           </p>
         </footer>
       ) : null}
