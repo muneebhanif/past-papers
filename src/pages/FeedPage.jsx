@@ -136,9 +136,9 @@ const EmptyState = ({ search, department, onClear }) => (
 /*  Filter pill                                                       */
 /* ------------------------------------------------------------------ */
 const FilterPill = ({ label, value, onClear }) => (
-  <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/15 px-2.5 py-1 text-xs font-semibold text-blue-300">
+  <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-300/60 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:border-blue-400/30 dark:bg-blue-500/15 dark:text-blue-300">
     {label}: {value}
-    <button onClick={onClear} className="rounded-full p-0.5 hover:bg-blue-400/20">
+    <button onClick={onClear} className="rounded-full p-0.5 hover:bg-blue-200/60 dark:hover:bg-blue-400/20">
       <X className="h-3 w-3" />
     </button>
   </span>
@@ -297,13 +297,15 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
       {/* ============================================================ */}
       {/*  HEADER                                                      */}
       {/* ============================================================ */}
-      <header className="relative overflow-hidden rounded-2xl bg-slate-900 shadow-xl">
-        {/* Subtle grid texture */}
-        <div className="pointer-events-none absolute inset-0 opacity-[0.04]"
-          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px)", backgroundSize: "32px 32px" }} />
+      <header className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700/60 dark:bg-slate-900 dark:shadow-xl">
+        {/* Subtle grid texture (dark only) */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-0 dark:opacity-[0.04]"
+          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px)", backgroundSize: "32px 32px" }}
+        />
         {/* Accent glow */}
-        <div className={`pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gradient-to-br ${config.gradient} opacity-20 blur-3xl`} />
-        <div className="pointer-events-none absolute -bottom-10 -left-10 h-48 w-48 rounded-full bg-blue-500/10 blur-2xl" />
+        <div className={`pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gradient-to-br ${config.gradient} opacity-10 blur-3xl dark:opacity-20`} />
+        <div className="pointer-events-none absolute -bottom-10 -left-10 h-48 w-48 rounded-full bg-blue-400/10 blur-2xl dark:bg-blue-500/10" />
 
         <div className="relative p-4 sm:p-6">
           {/* ---- Mobile Department Selector ---- */}
@@ -313,10 +315,10 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
               <select
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-10 text-sm font-semibold text-white backdrop-blur-sm focus:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/10"
+                className="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-10 text-sm font-semibold text-slate-800 focus:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-white/20 dark:focus:ring-white/10"
               >
                 {DEPARTMENTS.map((item) => (
-                  <option key={item} value={item} className="bg-slate-900 text-white">
+                  <option key={item} value={item} className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">
                     {item}
                   </option>
                 ))}
@@ -328,20 +330,20 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
           {/* ---- Title row ---- */}
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400">
+              <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-slate-400">
                 {config.subtitle}
               </p>
-              <h1 className="text-2xl font-black leading-none tracking-tight text-white sm:text-3xl md:text-4xl">
+              <h1 className="text-2xl font-black leading-none tracking-tight text-slate-900 dark:text-white sm:text-3xl md:text-4xl">
                 <span className={`bg-gradient-to-r ${config.gradient} bg-clip-text text-transparent`}>
                   {department === "All" ? "Academic Archive" : department}
                 </span>
               </h1>
-              <p className="mt-1.5 text-xs text-slate-400 sm:text-sm">
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400 sm:text-sm">
                 {config.description}
               </p>
             </div>
-            <div className="hidden flex-shrink-0 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-center md:block">
-              <p className="text-xl font-black text-white">{results.length}</p>
+            <div className="hidden flex-shrink-0 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-center dark:border-white/10 dark:bg-white/5 md:block">
+              <p className="text-xl font-black text-slate-900 dark:text-white">{results.length}</p>
               <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Papers</p>
             </div>
           </div>
@@ -354,12 +356,12 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={`Search ${department === "All" ? "all departments" : department}…`}
-              className="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-10 pr-10 text-sm text-white placeholder:text-slate-500 backdrop-blur-sm transition-all focus:border-white/20 focus:bg-white/8 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-10 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:border-blue-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-slate-500 dark:focus:border-white/20 dark:focus:bg-white/8 dark:focus:ring-blue-500/40"
             />
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 active:text-white"
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:text-slate-700 active:text-slate-900 dark:hover:text-white dark:active:text-white"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -372,14 +374,14 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
               onClick={() => setShowFilters(!showFilters)}
               className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all active:scale-95 ${
                 showFilters || hasActiveFilters
-                  ? "border-blue-400/50 bg-blue-500/20 text-blue-300"
-                  : "border-white/10 bg-white/5 text-slate-300"
+                  ? "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-400/50 dark:bg-blue-500/20 dark:text-blue-300"
+                  : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
               }`}
             >
               <SlidersHorizontal className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Filters</span>
               {activeFilterCount > 0 && (
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-[10px] font-black text-white">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-black text-white dark:bg-blue-500">
                   {activeFilterCount}
                 </span>
               )}
@@ -400,8 +402,8 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
                     onClick={() => setPaperType(tab.id)}
                     className={`inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2 text-xs font-bold transition-all active:scale-95 sm:px-4 sm:py-2 sm:text-sm ${
                       isActive
-                        ? "bg-white text-slate-900 shadow-lg"
-                        : "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
+                        ? "bg-slate-900 text-white shadow-md dark:bg-white dark:text-slate-900"
+                        : "border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-white/10 dark:bg-white/5 dark:text-slate-300 dark:hover:bg-white/10"
                     }`}
                   >
                     <span className="sm:hidden">{tab.mobileLabel}</span>
@@ -411,16 +413,24 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
               })}
             </div>
 
-            <div className="hidden items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1 md:flex">
+            <div className="hidden items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1 dark:border-white/10 dark:bg-white/5 md:flex">
               <button
                 onClick={() => setViewMode("feed")}
-                className={`rounded-lg p-1.5 transition-all ${viewMode === "feed" ? "bg-white text-slate-900 shadow" : "text-slate-400 hover:text-white"}`}
+                className={`rounded-lg p-1.5 transition-all ${
+                  viewMode === "feed"
+                    ? "bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900"
+                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+                }`}
               >
                 <List className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setViewMode("grid")}
-                className={`rounded-lg p-1.5 transition-all ${viewMode === "grid" ? "bg-white text-slate-900 shadow" : "text-slate-400 hover:text-white"}`}
+                className={`rounded-lg p-1.5 transition-all ${
+                  viewMode === "grid"
+                    ? "bg-slate-900 text-white shadow dark:bg-white dark:text-slate-900"
+                    : "text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white"
+                }`}
               >
                 <LayoutGrid className="h-4 w-4" />
               </button>
@@ -443,7 +453,7 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
                   onClear={() => setSearch("")}
                 />
               )}
-              <button onClick={clearAllFilters} className="text-xs font-semibold text-slate-500 hover:text-slate-300">
+              <button onClick={clearAllFilters} className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-500 dark:hover:text-slate-300">
                 Clear all
               </button>
             </div>
@@ -452,19 +462,19 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
           {/* ---- Expandable filter panel ---- */}
           <div className={`grid transition-all duration-300 ${showFilters ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
             <div className="overflow-hidden">
-              <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-4">
+              <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-white/10 dark:bg-white/5 sm:p-4">
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <div>
-                    <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Semester</label>
+                    <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Semester</label>
                     <div className="relative">
                       <select
                         value={semester}
                         onChange={(e) => setSemester(e.target.value)}
-                        className="w-full appearance-none rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 pr-8 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                        className="w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 pr-8 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:ring-blue-500/40"
                       >
-                        <option value="All" className="bg-slate-900">All Semesters</option>
+                        <option value="All" className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">All Semesters</option>
                         {SEMESTERS.map((s) => (
-                          <option key={s} value={s} className="bg-slate-900">Semester {s}</option>
+                          <option key={s} value={s} className="bg-white text-slate-900 dark:bg-slate-900 dark:text-white">Semester {s}</option>
                         ))}
                       </select>
                       <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -472,13 +482,13 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
                   </div>
                 </div>
                 {hasActiveFilters && (
-                  <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
+                  <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-3 dark:border-white/10">
                     <div className="flex flex-wrap gap-1.5">
                       {paperType !== "All" && <FilterPill label="Type" value={paperType} onClear={() => setPaperType("All")} />}
                       {semester !== "All" && <FilterPill label="Semester" value={semester} onClear={() => setSemester("All")} />}
                       {search && <FilterPill label="Search" value={search.length > 15 ? `${search.slice(0, 15)}…` : search} onClear={() => setSearch("")} />}
                     </div>
-                    <button onClick={clearAllFilters} className="text-xs font-semibold text-slate-400 hover:text-white">Clear all</button>
+                    <button onClick={clearAllFilters} className="text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white">Clear all</button>
                   </div>
                 )}
               </div>
