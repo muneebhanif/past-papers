@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Heart, MessageSquare, Moon, Sun } from "lucide-react";
+import { Bell, CheckCircle, Heart, MessageSquare, Moon, Sun, XCircle } from "lucide-react";
 import { AuthButton } from "../auth/AuthButton";
 import mustLogo from "../../assets/must-logo.png";
 import { api } from "../../lib/api";
@@ -44,12 +44,24 @@ export function Navbar() {
     if (item.type === "like") {
       return `${item.actorName} liked ${item.paperTitle}`;
     }
+    if (item.type === "paper_approved") {
+      return `Your paper "${item.paperTitle}" was approved! ✅`;
+    }
+    if (item.type === "paper_rejected") {
+      return item.content || `Your paper "${item.paperTitle}" was rejected.`;
+    }
     return `${item.actorName} commented on ${item.paperTitle}`;
   };
 
   const NotificationTypeIcon = ({ type }) => {
     if (type === "like") {
       return <Heart className="h-3.5 w-3.5" aria-hidden="true" />;
+    }
+    if (type === "paper_approved") {
+      return <CheckCircle className="h-3.5 w-3.5" aria-hidden="true" />;
+    }
+    if (type === "paper_rejected") {
+      return <XCircle className="h-3.5 w-3.5" aria-hidden="true" />;
     }
     return <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />;
   };

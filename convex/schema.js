@@ -98,7 +98,7 @@ export default defineSchema({
     userId: v.id("users"),
     actorId: v.id("users"),
     paperId: v.id("papers"),
-    type: v.union(v.literal("like"), v.literal("comment")),
+    type: v.union(v.literal("like"), v.literal("comment"), v.literal("paper_approved"), v.literal("paper_rejected")),
     content: v.optional(v.string()),
     read: v.boolean(),
     createdAt: v.number(),

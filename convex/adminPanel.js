@@ -206,6 +206,26 @@ export const setStatus = mutation({
       reviewedBy: session.email,
     });
 
+    // Notify the paper uploader
+    const notifType = args.status === "approved" ? "paper_approved" : "paper_rejected";
+    // Use a system actor: find any admin user or fall back to uploader itself
+    const adminUser = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", session.email))
+      .unique();
+    const actorId = adminUser?._id ?? paper.uploadedBy;
+    await ctx.db.insert("notifications", {
+      userId: paper.uploadedBy,
+      actorId,
+      paperId: args.paperId,
+      type: notifType,
+      content: args.status === "approved"
+        ? "Your paper has been approved and is now live!"
+        : `Your paper was rejected. Note: ${note}`,
+      read: false,
+      createdAt: Date.now(),
+    });
+
     return { ok: true };
   },
 });

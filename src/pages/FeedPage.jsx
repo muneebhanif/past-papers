@@ -1,6 +1,7 @@
 import { useConvexAuth, useQuery } from "convex/react";
 import { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { useHybridFeed } from "../hooks/useHybridFeed";
 import { api } from "../lib/api";
 import { LoginSplash } from "../components/feed/LoginSplash";
@@ -145,6 +146,77 @@ const FilterPill = ({ label, value, onClear }) => (
     </button>
   </span>
 );
+
+/* ------------------------------------------------------------------ */
+/*  VirtualFeed — only renders cards visible in the viewport          */
+/* ------------------------------------------------------------------ */
+function VirtualFeed({ papers, viewMode, highlightedPaperId, onRequireAuth }) {
+  const parentRef = useRef(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
+
+  useEffect(() => {
+    if (parentRef.current) {
+      setScrollMargin(parentRef.current.offsetTop);
+    }
+  }, []);
+
+  const virtualizer = useWindowVirtualizer({
+    count: papers.length,
+    estimateSize: () => 860,
+    overscan: 2,
+    scrollMargin,
+  });
+
+  const items = virtualizer.getVirtualItems();
+
+  return (
+    <div
+      ref={parentRef}
+      className={viewMode === "grid" ? "grid gap-4 sm:gap-6 md:grid-cols-2" : ""}
+    >
+      {viewMode === "grid" ? (
+        // Grid: simple render (virtualizer works best with single-column lists)
+        papers.map((paper) => (
+          <PaperCard
+            key={paper._id}
+            paper={paper}
+            onRequireAuth={onRequireAuth}
+            isFocused={highlightedPaperId === paper._id}
+          />
+        ))
+      ) : (
+        <div
+          style={{ height: virtualizer.getTotalSize(), position: "relative" }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              transform: `translateY(${items[0]?.start ?? 0}px)`,
+            }}
+          >
+            {items.map((virtualRow) => (
+              <div
+                key={virtualRow.key}
+                data-index={virtualRow.index}
+                ref={virtualizer.measureElement}
+                className="pb-4 sm:pb-6"
+              >
+                <PaperCard
+                  paper={papers[virtualRow.index]}
+                  onRequireAuth={onRequireAuth}
+                  isFocused={highlightedPaperId === papers[virtualRow.index]._id}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 /* ------------------------------------------------------------------ */
 /*  Main FeedPage                                                     */
@@ -533,16 +605,12 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
       ) : displayedPapers.length === 0 ? (
         <EmptyState search={search} department={department} onClear={() => setSearch("")} />
       ) : (
-        <div className={viewMode === "grid" ? "grid gap-4 sm:gap-6 md:grid-cols-2" : "space-y-4 sm:space-y-6"}>
-          {displayedPapers.map((paper) => (
-            <PaperCard
-              key={paper._id}
-              paper={paper}
-              onRequireAuth={onRequireAuth}
-              isFocused={highlightedPaperId === paper._id}
-            />
-          ))}
-        </div>
+        <VirtualFeed
+          papers={displayedPapers}
+          viewMode={viewMode}
+          highlightedPaperId={highlightedPaperId}
+          onRequireAuth={onRequireAuth}
+        />
       )}
 
       {/* ============================================================ */}

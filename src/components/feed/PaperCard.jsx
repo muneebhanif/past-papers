@@ -107,6 +107,33 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
     }
   };
 
+  const onShare = async () => {
+    const url = `${window.location.origin}/?paper=${paper._id}`;
+    const shareData = {
+      title: paper.title,
+      text: `Check out this past paper: ${paper.title} — ${paper.subject} (${paper.year})`,
+      url,
+    };
+    try {
+      if (navigator.share && navigator.canShare?.(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied to clipboard!");
+      }
+    } catch (err) {
+      if (err?.name !== "AbortError") {
+        try {
+          await navigator.clipboard.writeText(url);
+          toast.success("Link copied to clipboard!");
+        } catch {
+          toast.error("Could not share. Please copy the URL manually.");
+        }
+      }
+    }
+    setMenuOpen(false);
+  };
+
   const handleLike = async () => {
     if (!isAuthenticated) {
       onRequireAuth();
@@ -344,6 +371,7 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
               </button>
               <button
                 type="button"
+                onClick={() => void onShare()}
                 className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
               >
                 <Share2 className="h-4 w-4" />
