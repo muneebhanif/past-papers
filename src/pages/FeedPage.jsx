@@ -136,12 +136,9 @@ const EmptyState = ({ search, department, onClear }) => (
 /*  Filter pill                                                       */
 /* ------------------------------------------------------------------ */
 const FilterPill = ({ label, value, onClear }) => (
-  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+  <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/15 px-2.5 py-1 text-xs font-semibold text-blue-300">
     {label}: {value}
-    <button
-      onClick={onClear}
-      className="rounded-full p-0.5 active:bg-blue-200"
-    >
+    <button onClick={onClear} className="rounded-full p-0.5 hover:bg-blue-400/20">
       <X className="h-3 w-3" />
     </button>
   </span>
@@ -300,268 +297,190 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
       {/* ============================================================ */}
       {/*  HEADER                                                      */}
       {/* ============================================================ */}
-      <header className="relative overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm sm:rounded-2xl">
-        {/* Background layers */}
-        <div className={`absolute inset-0 ${config.bgPattern} opacity-60`} />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.03%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-50" />
+      <header className="relative overflow-hidden rounded-2xl bg-slate-900 shadow-xl">
+        {/* Subtle grid texture */}
+        <div className="pointer-events-none absolute inset-0 opacity-[0.04]"
+          style={{ backgroundImage: "linear-gradient(rgba(255,255,255,.5) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.5) 1px,transparent 1px)", backgroundSize: "32px 32px" }} />
+        {/* Accent glow */}
+        <div className={`pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-gradient-to-br ${config.gradient} opacity-20 blur-3xl`} />
+        <div className="pointer-events-none absolute -bottom-10 -left-10 h-48 w-48 rounded-full bg-blue-500/10 blur-2xl" />
 
-        <div className="relative p-4 sm:p-6 md:p-8">
+        <div className="relative p-4 sm:p-6">
           {/* ---- Mobile Department Selector ---- */}
-          <div className="mb-4 sm:mb-6 xl:hidden">
-            <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 sm:text-xs">
-              Department
-            </label>
+          <div className="mb-4 xl:hidden">
             <div className="relative">
               <GraduationCap className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <select
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
-                className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-10 text-sm font-semibold text-slate-700 shadow-sm transition-all focus:border-blue-300 focus:outline-none focus:ring-4 focus:ring-blue-50"
+                className="w-full appearance-none rounded-xl border border-white/10 bg-white/5 py-2.5 pl-10 pr-10 text-sm font-semibold text-white backdrop-blur-sm focus:border-white/20 focus:outline-none focus:ring-2 focus:ring-white/10"
               >
                 {DEPARTMENTS.map((item) => (
-                  <option key={item} value={item}>
+                  <option key={item} value={item} className="bg-slate-900 text-white">
                     {item}
                   </option>
                 ))}
               </select>
-              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             </div>
           </div>
 
-          {/* ---- Title ---- */}
-          <div className="flex items-start justify-between gap-3">
+          {/* ---- Title row ---- */}
+          <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full bg-white/80 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600 shadow-sm backdrop-blur-sm sm:mb-2 sm:px-3 sm:py-1 sm:text-xs">
-                <GraduationCap className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+              <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.15em] text-slate-400">
                 {config.subtitle}
-              </div>
-              <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl md:text-4xl lg:text-5xl">
+              </p>
+              <h1 className="text-2xl font-black leading-none tracking-tight text-white sm:text-3xl md:text-4xl">
                 <span className={`bg-gradient-to-r ${config.gradient} bg-clip-text text-transparent`}>
                   {department === "All" ? "Academic Archive" : department}
                 </span>
               </h1>
-              <p className="mt-1 text-xs text-slate-600 sm:mt-2 sm:text-sm md:text-base">
+              <p className="mt-1.5 text-xs text-slate-400 sm:text-sm">
                 {config.description}
               </p>
             </div>
-
-            {/* Stats — hidden on small screens */}
-            <div className="hidden flex-shrink-0 items-center gap-2 rounded-xl bg-white/80 px-4 py-3 shadow-sm backdrop-blur-sm md:flex">
-              <BookOpen className="h-5 w-5 text-blue-600" />
-              <div>
-                <p className="text-lg font-bold text-slate-900">{Math.min(results.length, 6)}</p>
-                <p className="text-xs text-slate-500">Papers</p>
-              </div>
+            <div className="hidden flex-shrink-0 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-center md:block">
+              <p className="text-xl font-black text-white">{results.length}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Papers</p>
             </div>
           </div>
 
-          {/* ---- Search & Filters ---- */}
-          <div className="mt-4 space-y-3 sm:mt-6 sm:space-y-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 sm:left-4 sm:h-5 sm:w-5" />
-              <input
-                ref={searchInputRef}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={`Search in ${department === "All" ? "all departments" : department}…`}
-                className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-10 text-sm text-slate-700 shadow-sm transition-all placeholder:text-slate-400 focus:border-blue-300 focus:outline-none focus:ring-4 focus:ring-blue-50 sm:py-3.5 sm:pl-12 sm:pr-4"
-              />
-              {search && (
-                <button
-                  onClick={() => setSearch("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 active:bg-slate-100"
-                >
-                  <X className="h-4 w-4 text-slate-400" />
-                </button>
-              )}
-            </div>
-
-            {/* ---- Filter row ---- */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Filter toggle */}
+          {/* ---- Search ---- */}
+          <div className="relative mt-4">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              ref={searchInputRef}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={`Search ${department === "All" ? "all departments" : department}…`}
+              className="w-full rounded-xl border border-white/10 bg-white/5 py-3 pl-10 pr-10 text-sm text-white placeholder:text-slate-500 backdrop-blur-sm transition-all focus:border-white/20 focus:bg-white/8 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+            />
+            {search && (
               <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-semibold transition-all active:scale-95 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm ${
-                  showFilters || hasActiveFilters
-                    ? "border-blue-200 bg-blue-50 text-blue-700"
-                    : "border-slate-200 bg-white text-slate-600"
-                }`}
+                onClick={() => setSearch("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 active:text-white"
               >
-                <SlidersHorizontal className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                <span className="hidden sm:inline">Filters</span>
-                {activeFilterCount > 0 && (
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] text-white sm:h-5 sm:w-5 sm:text-xs">
-                    {activeFilterCount}
-                  </span>
-                )}
+                <X className="h-4 w-4" />
               </button>
-
-              {/* Paper type tabs — horizontal scroll */}
-              <div
-                ref={tabScrollRef}
-                className="flex flex-1 gap-1.5 overflow-x-auto scrollbar-none sm:gap-2"
-                style={{ WebkitOverflowScrolling: "touch" }}
-              >
-                {PAPER_TABS.map((tab) => {
-                  const Icon = tab.icon;
-                  const isActive = paperType === tab.id;
-                  return (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      {...(isActive ? { "data-active-tab": true } : {})}
-                      onClick={() => setPaperType(tab.id)}
-                      className={`inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold transition-all active:scale-95 sm:gap-2 sm:rounded-xl sm:px-4 sm:py-2.5 sm:text-sm ${
-                        isActive
-                          ? "bg-slate-900 text-white shadow-md"
-                          : "bg-white text-slate-600 shadow-sm ring-1 ring-slate-200"
-                      }`}
-                    >
-                      <Icon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${isActive ? "text-white" : "text-slate-400"}`} />
-                      {/* Short label on mobile, full on sm+ */}
-                      <span className="sm:hidden">{tab.mobileLabel}</span>
-                      <span className="hidden sm:inline">{tab.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {/* View mode — desktop only */}
-              <div className="hidden items-center gap-1 rounded-lg bg-slate-100 p-1 md:flex">
-                <button
-                  onClick={() => setViewMode("feed")}
-                  className={`rounded-md p-2 transition-all ${
-                    viewMode === "feed" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
-                  }`}
-                >
-                  <List className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode("grid")}
-                  className={`rounded-md p-2 transition-all ${
-                    viewMode === "grid" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"
-                  }`}
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
-
-            {/* ---- Active filters (mobile-friendly pills) ---- */}
-            {hasActiveFilters && !showFilters && (
-              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                {paperType !== "All" && (
-                  <FilterPill label="Type" value={paperType} onClear={() => setPaperType("All")} />
-                )}
-                {semester !== "All" && (
-                  <FilterPill label="Sem" value={semester} onClear={() => setSemester("All")} />
-                )}
-                {search && (
-                  <FilterPill
-                    label="Search"
-                    value={search.length > 12 ? `${search.slice(0, 12)}…` : search}
-                    onClear={() => setSearch("")}
-                  />
-                )}
-                <button
-                  onClick={clearAllFilters}
-                  className="text-xs font-semibold text-slate-400 active:text-slate-600"
-                >
-                  Clear all
-                </button>
-              </div>
             )}
+          </div>
 
-            {/* ---- Expandable filter panel ---- */}
-            <div
-              className={`grid transition-all duration-300 ${
-                showFilters ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          {/* ---- Type tabs + controls ---- */}
+          <div className="mt-3 flex items-center gap-2">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all active:scale-95 ${
+                showFilters || hasActiveFilters
+                  ? "border-blue-400/50 bg-blue-500/20 text-blue-300"
+                  : "border-white/10 bg-white/5 text-slate-300"
               }`}
             >
-              <div className="overflow-hidden">
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-3 sm:p-4">
-                  {/* On mobile: stack, on md+: 2 or 3 cols */}
-                  <div className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-                    {/* Semester */}
-                    <div>
-                      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 sm:text-xs">
-                        Semester
-                      </label>
-                      <div className="relative">
-                        <select
-                          value={semester}
-                          onChange={(e) => setSemester(e.target.value)}
-                          className="w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 pr-10 text-sm font-medium text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-4 focus:ring-blue-50"
-                        >
-                          <option value="All">All Semesters</option>
-                          {SEMESTERS.map((s) => (
-                            <option key={s} value={s}>
-                              Semester {s}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                      </div>
-                    </div>
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-[10px] font-black text-white">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
 
-                    {/* Year */}
-                    <div>
-                      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 sm:text-xs">
-                        Year
-                      </label>
-                      <div className="relative">
-                        <select className="w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 pr-10 text-sm font-medium text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-4 focus:ring-blue-50">
-                          <option>All Years</option>
-                          <option>2024</option>
-                          <option>2023</option>
-                          <option>2022</option>
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                      </div>
-                    </div>
+            <div
+              ref={tabScrollRef}
+              className="flex flex-1 gap-1.5 overflow-x-auto scrollbar-none"
+              style={{ WebkitOverflowScrolling: "touch" }}
+            >
+              {PAPER_TABS.map((tab) => {
+                const isActive = paperType === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    {...(isActive ? { "data-active-tab": true } : {})}
+                    onClick={() => setPaperType(tab.id)}
+                    className={`inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl px-3 py-2 text-xs font-bold transition-all active:scale-95 sm:px-4 sm:py-2 sm:text-sm ${
+                      isActive
+                        ? "bg-white text-slate-900 shadow-lg"
+                        : "border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
+                    }`}
+                  >
+                    <span className="sm:hidden">{tab.mobileLabel}</span>
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-                    {/* Subject */}
-                    <div className="sm:col-span-2 lg:col-span-1">
-                      <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-slate-500 sm:text-xs">
-                        Subject
-                      </label>
-                      <div className="relative">
-                        <select className="w-full appearance-none rounded-lg border border-slate-200 bg-white px-3 py-2.5 pr-10 text-sm font-medium text-slate-700 focus:border-blue-300 focus:outline-none focus:ring-4 focus:ring-blue-50">
-                          <option>All Subjects</option>
-                        </select>
-                        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                      </div>
+            <div className="hidden items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1 md:flex">
+              <button
+                onClick={() => setViewMode("feed")}
+                className={`rounded-lg p-1.5 transition-all ${viewMode === "feed" ? "bg-white text-slate-900 shadow" : "text-slate-400 hover:text-white"}`}
+              >
+                <List className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`rounded-lg p-1.5 transition-all ${viewMode === "grid" ? "bg-white text-slate-900 shadow" : "text-slate-400 hover:text-white"}`}
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* ---- Active filter pills ---- */}
+          {hasActiveFilters && !showFilters && (
+            <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+              {paperType !== "All" && (
+                <FilterPill label="Type" value={paperType} onClear={() => setPaperType("All")} />
+              )}
+              {semester !== "All" && (
+                <FilterPill label="Sem" value={semester} onClear={() => setSemester("All")} />
+              )}
+              {search && (
+                <FilterPill
+                  label="Search"
+                  value={search.length > 12 ? `${search.slice(0, 12)}…` : search}
+                  onClear={() => setSearch("")}
+                />
+              )}
+              <button onClick={clearAllFilters} className="text-xs font-semibold text-slate-500 hover:text-slate-300">
+                Clear all
+              </button>
+            </div>
+          )}
+
+          {/* ---- Expandable filter panel ---- */}
+          <div className={`grid transition-all duration-300 ${showFilters ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
+            <div className="overflow-hidden">
+              <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:p-4">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  <div>
+                    <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400">Semester</label>
+                    <div className="relative">
+                      <select
+                        value={semester}
+                        onChange={(e) => setSemester(e.target.value)}
+                        className="w-full appearance-none rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 pr-8 text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40"
+                      >
+                        <option value="All" className="bg-slate-900">All Semesters</option>
+                        {SEMESTERS.map((s) => (
+                          <option key={s} value={s} className="bg-slate-900">Semester {s}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                     </div>
                   </div>
-
-                  {/* Clear filters row */}
-                  {hasActiveFilters && (
-                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 pt-3 sm:mt-4 sm:pt-4">
-                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                        {paperType !== "All" && (
-                          <FilterPill label="Type" value={paperType} onClear={() => setPaperType("All")} />
-                        )}
-                        {semester !== "All" && (
-                          <FilterPill label="Semester" value={semester} onClear={() => setSemester("All")} />
-                        )}
-                        {search && (
-                          <FilterPill
-                            label="Search"
-                            value={search.length > 15 ? `${search.slice(0, 15)}…` : search}
-                            onClear={() => setSearch("")}
-                          />
-                        )}
-                      </div>
-                      <button
-                        onClick={clearAllFilters}
-                        className="text-xs font-semibold text-slate-500 active:text-slate-700 sm:text-sm"
-                      >
-                        Clear all
-                      </button>
-                    </div>
-                  )}
                 </div>
+                {hasActiveFilters && (
+                  <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
+                    <div className="flex flex-wrap gap-1.5">
+                      {paperType !== "All" && <FilterPill label="Type" value={paperType} onClear={() => setPaperType("All")} />}
+                      {semester !== "All" && <FilterPill label="Semester" value={semester} onClear={() => setSemester("All")} />}
+                      {search && <FilterPill label="Search" value={search.length > 15 ? `${search.slice(0, 15)}…` : search} onClear={() => setSearch("")} />}
+                    </div>
+                    <button onClick={clearAllFilters} className="text-xs font-semibold text-slate-400 hover:text-white">Clear all</button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -573,10 +492,8 @@ export function FeedPage({ department, setDepartment, search, setSearch, onRequi
       {/* ============================================================ */}
       {displayedPapers.length > 0 && (
         <div className="flex items-center justify-between px-1">
-          <p className="text-xs text-slate-500 sm:text-sm">
-            Showing{" "}
-            <span className="font-semibold text-slate-700">{displayedPapers.length}</span> papers
-            {hasActiveFilters && " with filters"}
+          <p className="text-xs font-medium text-slate-500">
+            <span className="font-bold text-slate-700">{displayedPapers.length}</span> papers{hasActiveFilters && " matched"}
           </p>
           {isHybridMode && (
             <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-700">
