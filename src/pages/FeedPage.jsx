@@ -156,62 +156,55 @@ function VirtualFeed({ papers, viewMode, highlightedPaperId, onRequireAuth }) {
 
   useEffect(() => {
     if (parentRef.current) {
-      setScrollMargin(parentRef.current.offsetTop);
+      setScrollMargin(parentRef.current.getBoundingClientRect().top + window.scrollY);
     }
   }, []);
 
   const virtualizer = useWindowVirtualizer({
     count: papers.length,
-    estimateSize: () => 860,
-    overscan: 2,
+    estimateSize: () => 900,
+    overscan: 3,
     scrollMargin,
   });
 
   const items = virtualizer.getVirtualItems();
 
   return (
-    <div
-      ref={parentRef}
-      className={viewMode === "grid" ? "grid gap-4 sm:gap-6 md:grid-cols-2" : ""}
-    >
+    <div ref={parentRef}>
       {viewMode === "grid" ? (
-        // Grid: simple render (virtualizer works best with single-column lists)
-        papers.map((paper) => (
-          <PaperCard
-            key={paper._id}
-            paper={paper}
-            onRequireAuth={onRequireAuth}
-            isFocused={highlightedPaperId === paper._id}
-          />
-        ))
+        <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+          {papers.map((paper) => (
+            <PaperCard
+              key={paper._id}
+              paper={paper}
+              onRequireAuth={onRequireAuth}
+              isFocused={highlightedPaperId === paper._id}
+            />
+          ))}
+        </div>
       ) : (
-        <div
-          style={{ height: virtualizer.getTotalSize(), position: "relative" }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              transform: `translateY(${items[0]?.start ?? 0}px)`,
-            }}
-          >
-            {items.map((virtualRow) => (
-              <div
-                key={virtualRow.key}
-                data-index={virtualRow.index}
-                ref={virtualizer.measureElement}
-                className="pb-4 sm:pb-6"
-              >
-                <PaperCard
-                  paper={papers[virtualRow.index]}
-                  onRequireAuth={onRequireAuth}
-                  isFocused={highlightedPaperId === papers[virtualRow.index]._id}
-                />
-              </div>
-            ))}
-          </div>
+        <div style={{ height: virtualizer.getTotalSize(), position: "relative" }}>
+          {items.map((virtualRow) => (
+            <div
+              key={virtualRow.key}
+              data-index={virtualRow.index}
+              ref={virtualizer.measureElement}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                transform: `translateY(${virtualRow.start - scrollMargin}px)`,
+              }}
+              className="pb-4 sm:pb-6"
+            >
+              <PaperCard
+                paper={papers[virtualRow.index]}
+                onRequireAuth={onRequireAuth}
+                isFocused={highlightedPaperId === papers[virtualRow.index]._id}
+              />
+            </div>
+          ))}
         </div>
       )}
     </div>
