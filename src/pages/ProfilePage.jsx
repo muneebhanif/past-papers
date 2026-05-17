@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import { DEPARTMENTS } from "../constants/departments";
 import { ACADEMIC_YEARS, PAPER_TYPES } from "../constants/academicOptions";
-import { cartoonAvatar } from "../lib/avatar";
+import { userAvatar } from "../lib/avatar";
 import { ImageViewerModal } from "../components/common/ImageViewerModal";
 
 export function ProfilePage() {
@@ -111,7 +111,7 @@ export function ProfilePage() {
         <div className="h-28 rounded-xl bg-gradient-to-r from-blue-100 to-indigo-100" />
         <div className="-mt-10 flex flex-wrap items-end gap-4 px-2 sm:px-4">
           <img
-            src={cartoonAvatar(me?.username || me?._id)}
+            src={userAvatar(me?.image, me?.username || me?._id)}
             alt={me?.username ?? me?.name ?? "User"}
             className="h-20 w-20 rounded-2xl border-4 border-white object-cover"
           />

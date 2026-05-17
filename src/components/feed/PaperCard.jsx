@@ -2,7 +2,7 @@ import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { api } from "../../lib/api";
-import { cartoonAvatar } from "../../lib/avatar";
+import { userAvatar } from "../../lib/avatar";
 import { ImageViewerModal } from "../common/ImageViewerModal";
 import {
   Heart,
@@ -310,7 +310,7 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
           <div className="flex items-center gap-3">
             <div className="relative">
               <img
-                src={cartoonAvatar(paper.uploader.name || paper.uploader._id)}
+                src={userAvatar(paper.uploader.image, paper.uploader.name || paper.uploader._id)}
                 alt={paper.uploader.name}
                 className="h-11 w-11 rounded-full object-cover ring-2 ring-white shadow-sm"
                 loading="lazy"
@@ -600,7 +600,7 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
         <form onSubmit={onSubmitComment} className="mt-4">
           <div className="flex gap-3">
             <img
-              src={cartoonAvatar(me?.name || me?._id || "guest")}
+              src={userAvatar(me?.image, me?.name || me?._id || "guest")}
               alt="You"
               className="h-9 w-9 flex-shrink-0 rounded-full object-cover ring-2 ring-white shadow-sm"
               loading="lazy"
@@ -636,7 +636,7 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
                 <div key={item._id} className="space-y-2">
                   <div className="group/comment flex gap-3 transition-all duration-200">
                     <img
-                      src={cartoonAvatar(item.user.name || item.user._id)}
+                      src={userAvatar(item.user.image, item.user.name || item.user._id)}
                       alt={item.user.name}
                       className="h-8 w-8 flex-shrink-0 rounded-full object-cover ring-2 ring-white shadow-sm"
                       loading="lazy"
@@ -767,7 +767,7 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
                       {replies.map((reply) => (
                         <div key={reply._id} className="group/comment flex gap-3">
                           <img
-                            src={cartoonAvatar(reply.user.name || reply.user._id)}
+                            src={userAvatar(reply.user.image, reply.user.name || reply.user._id)}
                             alt={reply.user.name}
                             className="h-7 w-7 flex-shrink-0 rounded-full object-cover ring-2 ring-white shadow-sm"
                             loading="lazy"
