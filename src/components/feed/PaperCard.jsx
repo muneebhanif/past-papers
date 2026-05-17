@@ -108,7 +108,7 @@ export function PaperCard({ paper, onRequireAuth, isFocused = false }) {
   };
 
   const onShare = async () => {
-    const url = `${window.location.origin}/?paper=${paper._id}`;
+    const url = `${window.location.origin}/paper/${paper._id}`;
     const shareData = {
       title: paper.title,
       text: `Check out this past paper: ${paper.title} — ${paper.subject} (${paper.year})`,
